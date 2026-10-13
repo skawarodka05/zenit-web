@@ -172,7 +172,7 @@ body { background: #0A0A1A; color: #fff; display: flex; flex-direction: column; 
 
 <!-- Шапка -->
 <div class="header">
-  <button class="back-btn" onclick="location.href='z4.html'">←</button>
+  <button class="back-btn" onclick="location.href='index.html'">←</button>
   <div class="header-title">
     <h1>Общение</h1>
     <p id="info">Загрузка...</p>
@@ -224,7 +224,7 @@ let allMessages = [];
 let selectedFile = null;
 let selectedImage = null;
 
-if (!currentUser) { location.href = 'z4.html'; }
+if (!currentUser) { location.href = 'index.html'; }
 
 document.getElementById('info').textContent = currentUser.name + ' · ' + (currentUser.role || '');
 

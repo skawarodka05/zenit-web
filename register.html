@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>ZENIT · Регистрация</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+body { background: #0A0A1A; color: #fff; min-height: 100vh; }
+
+#register-screen {
+  display: flex; align-items: center; justify-content: center;
+  min-height: 100vh; padding: 20px;
+}
+
+.register-box {
+  width: 100%; max-width: 460px;
+  animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.logo-circle {
+  width: 120px; height: 120px; margin: 0 auto 20px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #FF00FF, #00FFFF);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 48px; font-weight: 900;
+  box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+}
+
+.title {
+  text-align: center; font-size: 26px; font-weight: 900;
+  letter-spacing: 4px; margin-bottom: 24px;
+  background: linear-gradient(135deg, #FF00FF, #00FFFF);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.subtitle {
+  text-align: center; font-size: 14px; color: #B0B0C0;
+  margin-bottom: 24px;
+}
+
+.form-group { margin-bottom: 14px; }
+
+.form-label {
+  display: block; font-size: 12px; color: #B0B0C0;
+  margin-bottom: 6px; font-weight: 600;
+}
+
+.neon-input, .neon-select {
+  width: 100%; padding: 14px 18px; border-radius: 12px;
+  background: #14142B; border: 1px solid rgba(0, 255, 255, 0.5);
+  color: #fff; font-size: 15px; outline: none;
+  transition: all 0.2s; font-family: inherit;
+}
+.neon-input:focus, .neon-select:focus {
+  border-color: #00FFFF;
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.4);
+}
+.neon-input::placeholder { color: #B0B0C0; }
+.neon-select { cursor: pointer; appearance: none; 
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2300FFFF' stroke-width='2'%3e%3cpolyline points='6 9 12 15 18 9'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 18px;
+  padding-right: 44px;
+}
+
+.neon-select option {
+  background: #14142B;
+  color: #fff;
+}
+
+/* Пароль с глазом */
+.password-wrapper { position: relative; }
+.password-wrapper .toggle-eye {
+  position: absolute; right: 14px; top: 50%;
+  transform: translateY(-50%);
+  background: transparent; border: none;
+  color: #B0B0C0; cursor: pointer; font-size: 18px;
+  padding: 4px;
+}
+.password-wrapper .toggle-eye:hover { color: #00FFFF; }
+
+/* Кнопка */
+.gradient-btn {
+  width: 100%; padding: 16px; border: none; border-radius: 12px;
+  background: linear-gradient(90deg, #FF00FF, #00FFFF);
+  color: #fff; font-size: 16px; font-weight: 700;
+  cursor: pointer; margin-top: 8px;
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.4);
+  transition: all 0.2s;
+}
+.gradient-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 0 30px rgba(0, 255, 255, 0.6); }
+.gradient-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Кнопка "Назад" */
+.back-link {
+  width: 100%; padding: 16px; margin-top: 12px;
+  border: 1px solid #FF00FF; border-radius: 12px;
+  background: transparent; color: #fff;
+  font-size: 15px; font-weight: 600; cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+  text-decoration: none;
+  display: block;
+}
+.back-link:hover { background: rgba(255, 0, 255, 0.1); }
+
+/* Ошибка */
+.error-text {
+  color: #FF00FF; font-size: 13px;
+  text-align: center; padding: 10px;
+  background: rgba(255, 0, 255, 0.1);
+  border: 1px solid rgba(255, 0, 255, 0.3);
+  border-radius: 10px;
+  margin-bottom: 14px;
+}
+
+/* Успех */
+.success-text {
+  color: #00FFFF; font-size: 13px;
+  text-align: center; padding: 10px;
+  background: rgba(0, 255, 255, 0.1);
+  border: 1px solid rgba(0, 255, 255, 0.3);
+  border-radius: 10px;
+  margin-bottom: 14px;
+}
+
+/* Скрытие */
+.hidden { display: none !important; }
+
+/* Индикатор загрузки */
+.spinner {
+  display: inline-block;
+  width: 16px; height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Инфо о роли */
+.role-hint {
+  font-size: 11px; color: #606060;
+  margin-top: 4px; font-style: italic;
+}
+</style>
+</head>
+<body>
+
+<div id="register-screen">
+  <div class="register-box">
+
+    <div class="logo-circle">Z</div>
+    <div class="title">ZENIT</div>
+    <div class="subtitle">Создать новый аккаунт</div>
+
+    <div id="error-box" class="error-text hidden"></div>
+    <div id="success-box" class="success-text hidden"></div>
+
+    <!-- Имя -->
+    <div class="form-group">
+      <label class="form-label">Имя *</label>
+      <input type="text" class="neon-input" id="name-input" placeholder="Иван Иванов">
+    </div>
+
+    <!-- Email -->
+    <div class="form-group">
+      <label class="form-label">Email *</label>
+      <input type="email" class="neon-input" id="email-input" placeholder="example@zenit.ru">
+    </div>
+
+    <!-- Пароль -->
+    <div class="form-group">
+      <label class="form-label">Пароль *</label>
+      <div class="password-wrapper">
+        <input type="password" class="neon-input" id="password-input" placeholder="Минимум 4 символа">
+        <button class="toggle-eye" onclick="togglePassword('password-input', this)">👁</button>
+      </div>
+    </div>
+
+    <!-- Подтверждение пароля -->
+    <div class="form-group">
+      <label class="form-label">Подтверждение пароля *</label>
+      <div class="password-wrapper">
+        <input type="password" class="neon-input" id="confirm-input" placeholder="Повторите пароль">
+        <button class="toggle-eye" onclick="togglePassword('confirm-input', this)">👁</button>
+      </div>
+    </div>
+
+    <!-- Роль -->
+    <div class="form-group">
+      <label class="form-label">Роль *</label>
+      <select class="neon-select" id="role-select">
+        <option value="MANAGER">Менеджер</option>
+        <option value="DEPUTY_DIRECTOR">Заместитель директора</option>
+        <option value="DIRECTOR">Директор</option>
+        <option value="TU">ТУ</option>
+        <option value="OD">ОД</option>
+        <option value="ID">ИД</option>
+        <option value="MODERATOR_ZENIT">Модератор Zenit</option>
+        <option value="LEAD_DEV_ZENIT">Ведущий разработчик Zenit</option>
+      </select>
+      <div class="role-hint" id="role-hint"></div>
+    </div>
+
+    <!-- Кнопки -->
+    <button class="gradient-btn" id="register-btn" onclick="handleRegister()">СОЗДАТЬ АККАУНТ</button>
+    <a class="back-link" href="z4.html">← Уже есть аккаунт? Войти</a>
+
+  </div>
+</div>
+
+<script>
+// ========== КОНФИГ ==========
+const SB_URL = 'https://owkizfikhtiqbwftqgfd.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93a2l6ZmlraHRpcWJ3ZnRxZ2ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE0OTYxMDYsImV4cCI6MjEwNzA3MjEwNn0.EHVyXiBYuSJrDVd_k5zAbwqT3ZPFF43p5Uh4_huKoOo';
+
+window.SB = window.supabase.createClient(SB_URL, SB_KEY);
+console.log('✅ SB клиент готов');
+
+// ========== ПОДСКАЗКИ ПО РОЛЯМ ==========
+const ROLE_HINTS = {
+  MANAGER: 'Только просмотр (без создания постов)',
+  DEPUTY_DIRECTOR: 'Может писать в чат',
+  DIRECTOR: 'Полный доступ',
+  TU: 'Полный доступ',
+  OD: 'Полный доступ',
+  ID: 'Полный доступ',
+  MODERATOR_ZENIT: 'Полный доступ + модерация',
+  LEAD_DEV_ZENIT: 'Полный доступ',
+};
+
+const roleSelect = document.getElementById('role-select');
+roleSelect.addEventListener('change', () => {
+  document.getElementById('role-hint').textContent = ROLE_HINTS[roleSelect.value] || '';
+});
+document.getElementById('role-hint').textContent = ROLE_HINTS[roleSelect.value];
+
+// ========== ПОКАЗ ПАРОЛЯ ==========
+function togglePassword(inputId, btn) {
+  const input = document.getElementById(inputId);
+  if (input.type === 'password') {
+    input.type = 'text';
+    btn.textContent = '🙈';
+  } else {
+    input.type = 'password';
+    btn.textContent = '👁';
+  }
+}
+
+// ========== УВЕДОМЛЕНИЯ ==========
+function showError(text) {
+  const box = document.getElementById('error-box');
+  box.textContent = text;
+  box.classList.remove('hidden');
+  document.getElementById('success-box').classList.add('hidden');
+}
+
+function showSuccess(text) {
+  const box = document.getElementById('success-box');
+  box.textContent = text;
+  box.classList.remove('hidden');
+  document.getElementById('error-box').classList.add('hidden');
+}
+
+function hideMessages() {
+  document.getElementById('error-box').classList.add('hidden');
+  document.getElementById('success-box').classList.add('hidden');
+}
+
+// ========== РЕГИСТРАЦИЯ ==========
+async function handleRegister() {
+  const name = document.getElementById('name-input').value.trim();
+  const email = document.getElementById('email-input').value.trim().toLowerCase();
+  const password = document.getElementById('password-input').value;
+  const confirm = document.getElementById('confirm-input').value;
+  const role = document.getElementById('role-select').value;
+
+  hideMessages();
+
+  // Валидация
+  if (!name) { showError('Введите имя'); return; }
+  if (!email) { showError('Введите email'); return; }
+  if (!email.includes('@') || !email.includes('.')) { showError('Неверный формат email'); return; }
+  if (!password) { showError('Введите пароль'); return; }
+  if (password.length < 4) { showError('Пароль минимум 4 символа'); return; }
+  if (password !== confirm) { showError('Пароли не совпадают'); return; }
+
+  const btn = document.getElementById('register-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Создание...';
+
+  try {
+    // Проверка — занят ли email
+    const { data: existing, error: checkError } = await window.SB
+      .from('users')
+      .select('id')
+      .eq('email', email)
+      .maybeSingle();
+
+    if (checkError) throw checkError;
+
+    if (existing) {
+      showError('Этот email уже зарегистрирован');
+      return;
+    }
+
+    // Создание аккаунта
+    const { data: newUser, error: insertError } = await window.SB
+      .from('users')
+      .insert({
+        name: name,
+        email: email,
+        password: password,
+        role: role,
+      })
+      .select()
+      .single();
+
+    if (insertError) throw insertError;
+
+    // Автоматический вход
+    localStorage.setItem('zenit-user', JSON.stringify(newUser));
+
+    showSuccess('✅ Аккаунт создан! Перенаправление...');
+
+    setTimeout(() => {
+      location.href = 'z4.html';
+    }, 1500);
+
+  } catch (e) {
+    showError('Ошибка: ' + e.message);
+    console.error(e);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'СОЗДАТЬ АККАУНТ';
+  }
+}
+
+// ========== ENTER ==========
+document.querySelectorAll('input').forEach(input => {
+  input.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') handleRegister();
+  });
+});
+</script>
+</body>
+</html>

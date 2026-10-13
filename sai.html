@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>ZENIT · SAI Global</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+body { background: #0A0A1A; color: #fff; min-height: 100vh; }
+.hidden { display: none !important; }
+
+/* Шапка */
+.header {
+  display: flex; align-items: center; gap: 12px;
+  padding: 16px; background: #14142B;
+  border-bottom: 1px solid rgba(0, 255, 255, 0.3);
+  position: sticky; top: 0; z-index: 100;
+}
+.back-btn {
+  width: 42px; height: 42px; border-radius: 12px;
+  background: #0A0A1A; border: 1px solid rgba(0, 255, 255, 0.5);
+  color: #00FFFF; font-size: 20px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.header-title { flex: 1; }
+.header-title h1 { font-size: 18px; font-weight: 700; }
+.header-title p { font-size: 12px; color: #00FFFF; margin-top: 2px; }
+
+/* Контейнер */
+.container { max-width: 900px; margin: 0 auto; padding: 16px 16px 100px; }
+
+/* Список */
+.sai-list { display: flex; flex-direction: column; gap: 12px; }
+
+/* Карточка */
+.sai-card {
+  display: flex; align-items: flex-start; gap: 14px;
+  background: #14142B; border: 1px solid rgba(0, 255, 255, 0.4);
+  border-radius: 14px; padding: 16px;
+  transition: all 0.2s;
+}
+.sai-card:hover { border-color: #00FFFF; box-shadow: 0 0 15px rgba(0, 255, 255, 0.2); }
+
+.sai-icon {
+  width: 54px; height: 54px; border-radius: 50%;
+  background: rgba(255, 0, 255, 0.15); color: #FF00FF;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px; flex-shrink: 0;
+}
+
+.sai-info { flex: 1; min-width: 0; }
+.sai-title { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+.sai-desc { font-size: 13px; color: #B0B0C0; margin-bottom: 6px; }
+.sai-meta { font-size: 11px; color: #00FFFF; }
+
+.sai-actions {
+  display: flex; gap: 6px; align-items: center; flex-shrink: 0;
+}
+.action-btn {
+  width: 38px; height: 38px; border-radius: 50%;
+  background: transparent; border: 1px solid rgba(0, 255, 255, 0.4);
+  color: #00FFFF; cursor: pointer; font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.action-btn:hover { background: rgba(0, 255, 255, 0.15); }
+.action-btn.pink { border-color: rgba(255, 0, 255, 0.5); color: #FF00FF; }
+.action-btn.pink:hover { background: rgba(255, 0, 255, 0.15); }
+
+/* FAB */
+.fab {
+  position: fixed; bottom: 24px; right: 24px;
+  padding: 16px 24px; border: none; border-radius: 50px;
+  background: linear-gradient(90deg, #FF00FF, #00FFFF);
+  color: #fff; font-size: 15px; font-weight: 700;
+  cursor: pointer; box-shadow: 0 0 25px rgba(0, 255, 255, 0.5);
+  display: flex; align-items: center; gap: 8px;
+}
+.fab:hover { transform: translateY(-3px); box-shadow: 0 0 35px rgba(0, 255, 255, 0.7); }
+
+/* Модалка */
+.modal-bg {
+  position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8);
+  display: none; align-items: center; justify-content: center;
+  z-index: 500; padding: 20px;
+}
+.modal-bg.show { display: flex; }
+.modal {
+  background: #14142B; border: 1px solid rgba(0, 255, 255, 0.4);
+  border-radius: 16px; padding: 24px; max-width: 500px; width: 100%;
+  max-height: 90vh; overflow-y: auto;
+}
+.modal-title { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
+
+.form-group { margin-bottom: 14px; }
+.form-label { display: block; font-size: 12px; color: #B0B0C0; margin-bottom: 6px; font-weight: 600; }
+.form-input, .form-textarea {
+  width: 100%; padding: 12px 14px; border-radius: 10px;
+  background: #0A0A1A; border: 1px solid rgba(0, 255, 255, 0.4);
+  color: #fff; font-size: 14px; outline: none; font-family: inherit;
+}
+.form-input:focus, .form-textarea:focus { border-color: #00FFFF; }
+.form-textarea { min-height: 80px; resize: vertical; }
+
+/* Файл-выбор */
+.file-picker {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px; border-radius: 10px;
+  background: #0A0A1A; border: 1px dashed rgba(0, 255, 255, 0.4);
+  cursor: pointer; transition: all 0.2s;
+}
+.file-picker:hover { border-color: #00FFFF; background: rgba(0, 255, 255, 0.05); }
+.file-picker.active { border-color: #FF00FF; background: rgba(255, 0, 255, 0.1); }
+.file-icon { font-size: 24px; }
+.file-text { flex: 1; font-size: 13px; color: #B0B0C0; }
+.file-picker.active .file-text { color: #FF00FF; font-weight: 700; }
+
+.modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+.modal-btn {
+  flex: 1; padding: 14px; border-radius: 12px;
+  font-size: 15px; font-weight: 700; cursor: pointer; border: none;
+}
+.modal-btn.save { background: linear-gradient(90deg, #FF00FF, #00FFFF); color: #fff; }
+.modal-btn.save:disabled { opacity: 0.5; cursor: not-allowed; }
+.modal-btn.cancel { background: transparent; border: 1px solid #606060; color: #B0B0C0; }
+
+/* Пустой экран */
+.empty { text-align: center; padding: 60px 20px; color: #606060; }
+.empty-icon { font-size: 60px; margin-bottom: 12px; }
+
+/* Загрузка */
+.loading { text-align: center; padding: 40px; color: #00FFFF; }
+
+/* Прогресс загрузки */
+.progress {
+  width: 100%; height: 6px; border-radius: 3px;
+  background: #0A0A1A; overflow: hidden; margin-top: 10px;
+}
+.progress-bar {
+  height: 100%; background: linear-gradient(90deg, #FF00FF, #00FFFF);
+  width: 0%; transition: width 0.3s;
+}
+</style>
+</head>
+<body>
+
+<!-- Шапка -->
+<div class="header">
+  <button class="back-btn" onclick="location.href='z4.html'">←</button>
+  <div class="header-title">
+    <h1>База SAI Global</h1>
+    <p id="subtitle">Загрузка...</p>
+  </div>
+</div>
+
+<!-- Контейнер -->
+<div class="container">
+  <div class="sai-list" id="sai-list">
+    <div class="loading">Загрузка...</div>
+  </div>
+</div>
+
+<!-- FAB -->
+<button class="fab" id="fab" onclick="openAddModal()">
+  ➕ Добавить
+</button>
+
+<!-- Модалка -->
+<div class="modal-bg" id="modal">
+  <div class="modal">
+    <div class="modal-title">Добавить проверку SAI</div>
+
+    <div class="form-group">
+      <label class="form-label">Название проверки *</label>
+      <input type="text" class="form-input" id="edit-title" placeholder="Проверка склада №5">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Описание</label>
+      <textarea class="form-textarea" id="edit-description" placeholder="Краткое описание проверки (необязательно)"></textarea>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">PDF-файл *</label>
+      <div class="file-picker" id="file-picker" onclick="document.getElementById('file-input').click()">
+        <span class="file-icon">📄</span>
+        <span class="file-text" id="file-text">Нажмите, чтобы выбрать PDF</span>
+      </div>
+      <input type="file" id="file-input" accept="application/pdf" style="display:none;" onchange="onFileSelected(this)">
+    </div>
+
+    <div class="progress" id="progress" style="display:none;">
+      <div class="progress-bar" id="progress-bar"></div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeModal()">Отмена</button>
+      <button class="modal-btn save" id="save-btn" onclick="uploadSai()">Загрузить</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ========== КОНФИГ ==========
+const SB_URL = 'https://owkizfikhtiqbwftqgfd.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93a2l6ZmlraHRpcWJ3ZnRxZ2ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE0OTYxMDYsImV4cCI6MjEwNzA3MjEwNn0.EHVyXiBYuSJrDVd_k5zAbwqT3ZPFF43p5Uh4_huKoOo';
+
+window.SB = window.supabase.createClient(SB_URL, SB_KEY);
+
+// ========== СОСТОЯНИЕ ==========
+let currentUser = JSON.parse(localStorage.getItem('zenit-user') || 'null');
+if (!currentUser) location.href = 'z4.html';
+
+const ROLE_TITLES = {
+  MANAGER: 'Менеджер',
+  DEPUTY_DIRECTOR: 'Заместитель директора',
+  DIRECTOR: 'Директор',
+  TU: 'ТУ', OD: 'ОД', ID: 'ИД',
+  MODERATOR_ZENIT: 'Модератор Zenit',
+  LEAD_DEV_ZENIT: 'Ведущий разработчик Zenit'
+};
+
+const canEdit = ['DIRECTOR', 'TU', 'OD', 'ID', 'MODERATOR_ZENIT', 'LEAD_DEV_ZENIT']
+  .includes(currentUser.role);
+
+let selectedFile = null;
+let allItems = [];
+
+// ========== ЗАГОЛОВОК ==========
+document.getElementById('subtitle').textContent = currentUser.name + ' · ' + (ROLE_TITLES[currentUser.role] || currentUser.role);
+
+// ========== FAB ==========
+if (!canEdit) {
+  document.getElementById('fab').style.display = 'none';
+}
+
+// ========== ЗАГРУЗКА ==========
+async function loadItems() {
+  try {
+    const { data, error } = await window.SB
+      .from('sai_global')
+      .select('*')
+      .order('id', { ascending: false });
+
+    if (error) throw error;
+
+    allItems = data || [];
+    render();
+  } catch (e) {
+    document.getElementById('sai-list').innerHTML = '<div class="empty">Ошибка: ' + e.message + '</div>';
+    console.error(e);
+  }
+}
+
+function render() {
+  const container = document.getElementById('sai-list');
+
+  if (!allItems || allItems.length === 0) {
+    container.innerHTML = `
+      <div class="empty">
+        <div class="empty-icon">📄</div>
+        <p>Пока нет проверок SAI</p>
+        ${canEdit ? '<p style="font-size:12px; margin-top:8px;">Нажмите ➕ Добавить, чтобы загрузить PDF</p>' : ''}
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = allItems.map(item => `
+    <div class="sai-card">
+      <div class="sai-icon">📄</div>
+      <div class="sai-info">
+        <div class="sai-title">${escapeHtml(item.title)}</div>
+        ${item.description ? `<div class="sai-desc">${escapeHtml(item.description)}</div>` : ''}
+        <div class="sai-meta">${escapeHtml(item.author)} · ${ROLE_TITLES[item.role] || item.role}</div>
+      </div>
+      <div class="sai-actions">
+        <button class="action-btn" onclick="openFile('${escapeAttr(item.file_url)}')" title="Открыть">👁</button>
+        <button class="action-btn" onclick="downloadFile('${escapeAttr(item.file_url)}', '${escapeAttr(item.title)}')" title="Скачать">⬇</button>
+        ${canEdit ? `<button class="action-btn pink" onclick="deleteItem(${item.id})" title="Удалить">🗑</button>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+// ========== ОТКРЫТИЕ / СКАЧИВАНИЕ ==========
+function openFile(url) {
+  window.open(url, '_blank');
+}
+
+function downloadFile(url, title) {
+  const safeName = (title || 'file').replace(/[^a-zA-Z0-9а-яА-Я._-]/g, '_');
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = safeName + '.pdf';
+  a.target = '_blank';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+// ========== МОДАЛКА ==========
+function openAddModal() {
+  if (!canEdit) { alert('У вас нет прав для добавления'); return; }
+  selectedFile = null;
+  document.getElementById('edit-title').value = '';
+  document.getElementById('edit-description').value = '';
+  document.getElementById('file-text').textContent = 'Нажмите, чтобы выбрать PDF';
+  document.getElementById('file-picker').classList.remove('active');
+  document.getElementById('progress').style.display = 'none';
+  document.getElementById('progress-bar').style.width = '0%';
+  document.getElementById('save-btn').disabled = false;
+  document.getElementById('modal').classList.add('show');
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('show');
+  selectedFile = null;
+}
+
+function onFileSelected(input) {
+  const file = input.files[0];
+  if (!file) return;
+
+  if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+    alert('Выберите PDF-файл');
+    return;
+  }
+
+  selectedFile = file;
+  document.getElementById('file-text').textContent = '📄 ' + file.name + ' (' + formatSize(file.size) + ')';
+  document.getElementById('file-picker').classList.add('active');
+  input.value = '';
+}
+
+// ========== ЗАГРУЗКА ==========
+async function uploadSai() {
+  const title = document.getElementById('edit-title').value.trim();
+  const description = document.getElementById('edit-description').value.trim();
+  const btn = document.getElementById('save-btn');
+
+  if (!title) { alert('Введите название'); return; }
+  if (!selectedFile) { alert('Выберите PDF-файл'); return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Загрузка...';
+  document.getElementById('progress').style.display = 'block';
+
+  try {
+    // Имя файла — уникальное
+    const fileName = 'sai_' + Date.now() + '_' + selectedFile.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+
+    // Прогресс-имитация (Supabase JS не даёт точного прогресса)
+    let progress = 0;
+    const progressInterval = setInterval(() => {
+      progress = Math.min(progress + 5, 90);
+      document.getElementById('progress-bar').style.width = progress + '%';
+    }, 100);
+
+    // Загрузка в Storage
+    const { error: uploadError } = await window.SB.storage
+      .from('attachments')
+      .upload(fileName, selectedFile);
+
+    if (uploadError) throw uploadError;
+
+    // Получаем публичный URL
+    const { data: urlData } = window.SB.storage
+      .from('attachments')
+      .getPublicUrl(fileName);
+
+    clearInterval(progressInterval);
+    document.getElementById('progress-bar').style.width = '100%';
+
+    // Сохранение в БД
+    const { error: dbError } = await window.SB.from('sai_global').insert({
+      title: title,
+      description: description,
+      file_url: urlData.publicUrl,
+      author: currentUser.name,
+      role: currentUser.role,
+    });
+
+    if (dbError) throw dbError;
+
+    closeModal();
+    await loadItems();
+  } catch (e) {
+    alert('Ошибка: ' + e.message);
+    console.error(e);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Загрузить';
+  }
+}
+
+// ========== УДАЛЕНИЕ ==========
+async function deleteItem(id) {
+  if (!confirm('Удалить проверку?')) return;
+  try {
+    const { error } = await window.SB.from('sai_global').delete().eq('id', id);
+    if (error) throw error;
+    await loadItems();
+  } catch (e) {
+    alert('Ошибка: ' + e.message);
+  }
+}
+
+// ========== УТИЛИТЫ ==========
+function escapeHtml(text) {
+  if (!text) return '';
+  return String(text).replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+}
+
+function escapeAttr(text) {
+  if (!text) return '';
+  return String(text).replace(/'/g, "\\'");
+}
+
+function formatSize(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+// Закрытие по клику на фон
+document.getElementById('modal').addEventListener('click', (e) => {
+  if (e.target.id === 'modal') closeModal();
+});
+
+// ========== СТАРТ ==========
+loadItems();
+</script>
+</body>
+</html>

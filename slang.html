@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>ZENIT · База слэнга</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+body { background: #0A0A1A; color: #fff; min-height: 100vh; }
+.hidden { display: none !important; }
+
+/* Шапка */
+.header {
+  display: flex; align-items: center; gap: 12px;
+  padding: 16px; background: #14142B;
+  border-bottom: 1px solid rgba(0, 255, 255, 0.3);
+  position: sticky; top: 0; z-index: 100;
+}
+.back-btn {
+  width: 42px; height: 42px; border-radius: 12px;
+  background: #0A0A1A; border: 1px solid rgba(0, 255, 255, 0.5);
+  color: #00FFFF; font-size: 20px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.header-title { flex: 1; }
+.header-title h1 { font-size: 18px; font-weight: 700; }
+.header-title p { font-size: 12px; color: #00FFFF; margin-top: 2px; }
+
+/* Контейнер */
+.container { max-width: 900px; margin: 0 auto; padding: 16px 16px 100px; }
+
+/* Поиск */
+.search-bar { margin-bottom: 16px; }
+.search-input {
+  width: 100%; padding: 14px 18px; border-radius: 12px;
+  background: #14142B; border: 1px solid rgba(0, 255, 255, 0.4);
+  color: #fff; font-size: 14px; outline: none;
+}
+.search-input:focus { border-color: #00FFFF; box-shadow: 0 0 12px rgba(0, 255, 255, 0.3); }
+.search-input::placeholder { color: #606060; }
+
+/* Список */
+.slang-list { display: flex; flex-direction: column; gap: 12px; }
+
+/* Карточка термина */
+.slang-card {
+  display: flex; align-items: flex-start; gap: 14px;
+  background: #14142B; border: 1px solid rgba(0, 255, 255, 0.4);
+  border-radius: 14px; padding: 16px;
+  transition: all 0.2s;
+}
+.slang-card:hover { border-color: #00FFFF; box-shadow: 0 0 15px rgba(0, 255, 255, 0.2); }
+
+.slang-icon {
+  width: 54px; height: 54px; border-radius: 50%;
+  background: rgba(255, 0, 255, 0.15); color: #FF00FF;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; flex-shrink: 0;
+}
+
+.slang-info { flex: 1; min-width: 0; }
+.slang-term {
+  font-size: 17px; font-weight: 700; margin-bottom: 6px;
+  color: #fff;
+}
+.slang-definition {
+  font-size: 14px; color: #D0D0E0; line-height: 1.5;
+  margin-bottom: 6px;
+}
+.slang-meta {
+  font-size: 11px; color: #00FFFF;
+}
+
+/* Кнопка удаления */
+.delete-btn {
+  width: 38px; height: 38px; border-radius: 50%;
+  background: transparent; border: 1px solid rgba(255, 0, 255, 0.5);
+  color: #FF00FF; cursor: pointer; font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s; flex-shrink: 0;
+}
+.delete-btn:hover { background: rgba(255, 0, 255, 0.15); }
+
+/* FAB */
+.fab {
+  position: fixed; bottom: 24px; right: 24px;
+  padding: 16px 24px; border: none; border-radius: 50px;
+  background: linear-gradient(90deg, #FF00FF, #00FFFF);
+  color: #fff; font-size: 15px; font-weight: 700;
+  cursor: pointer; box-shadow: 0 0 25px rgba(0, 255, 255, 0.5);
+  display: flex; align-items: center; gap: 8px;
+  transition: all 0.2s;
+}
+.fab:hover { transform: translateY(-3px); box-shadow: 0 0 35px rgba(0, 255, 255, 0.7); }
+
+/* Модалка */
+.modal-bg {
+  position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8);
+  display: none; align-items: center; justify-content: center;
+  z-index: 500; padding: 20px;
+}
+.modal-bg.show { display: flex; }
+.modal {
+  background: #14142B; border: 1px solid rgba(0, 255, 255, 0.4);
+  border-radius: 16px; padding: 24px; max-width: 500px; width: 100%;
+  max-height: 90vh; overflow-y: auto;
+}
+.modal-title { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
+
+.form-group { margin-bottom: 14px; }
+.form-label { display: block; font-size: 12px; color: #B0B0C0; margin-bottom: 6px; font-weight: 600; }
+.form-input, .form-textarea {
+  width: 100%; padding: 12px 14px; border-radius: 10px;
+  background: #0A0A1A; border: 1px solid rgba(0, 255, 255, 0.4);
+  color: #fff; font-size: 14px; outline: none; font-family: inherit;
+}
+.form-input:focus, .form-textarea:focus { border-color: #00FFFF; }
+.form-textarea { min-height: 100px; resize: vertical; }
+
+.modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+.modal-btn {
+  flex: 1; padding: 14px; border-radius: 12px;
+  font-size: 15px; font-weight: 700; cursor: pointer; border: none;
+}
+.modal-btn.save { background: linear-gradient(90deg, #FF00FF, #00FFFF); color: #fff; }
+.modal-btn.save:disabled { opacity: 0.5; cursor: not-allowed; }
+.modal-btn.cancel { background: transparent; border: 1px solid #606060; color: #B0B0C0; }
+
+/* Пустой экран */
+.empty { text-align: center; padding: 60px 20px; color: #606060; }
+.empty-icon { font-size: 60px; margin-bottom: 12px; }
+
+/* Загрузка */
+.loading { text-align: center; padding: 40px; color: #00FFFF; }
+</style>
+</head>
+<body>
+
+<!-- Шапка -->
+<div class="header">
+  <button class="back-btn" onclick="location.href='z4.html'">←</button>
+  <div class="header-title">
+    <h1>База слэнга</h1>
+    <p id="subtitle">Загрузка...</p>
+  </div>
+</div>
+
+<!-- Контейнер -->
+<div class="container">
+
+  <!-- Поиск -->
+  <div class="search-bar">
+    <input type="text" class="search-input" id="search-input" placeholder="🔍 Поиск термина или определения..." oninput="render()">
+  </div>
+
+  <!-- Список -->
+  <div class="slang-list" id="slang-list">
+    <div class="loading">Загрузка...</div>
+  </div>
+
+</div>
+
+<!-- FAB -->
+<button class="fab" id="fab" onclick="openAddModal()">
+  ➕ Добавить
+</button>
+
+<!-- Модалка -->
+<div class="modal-bg" id="modal">
+  <div class="modal">
+    <div class="modal-title">Новый термин</div>
+
+    <div class="form-group">
+      <label class="form-label">Термин *</label>
+      <input type="text" class="form-input" id="edit-term" placeholder="АУП">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Определение *</label>
+      <textarea class="form-textarea" id="edit-definition" placeholder="Административно-управленческий персонал"></textarea>
+    </div>
+
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeModal()">Отмена</button>
+      <button class="modal-btn save" id="save-btn" onclick="saveTerm()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ========== КОНФИГ ==========
+const SB_URL = 'https://owkizfikhtiqbwftqgfd.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93a2l6ZmlraHRpcWJ3ZnRxZ2ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE0OTYxMDYsImV4cCI6MjEwNzA3MjEwNn0.EHVyXiBYuSJrDVd_k5zAbwqT3ZPFF43p5Uh4_huKoOo';
+
+window.SB = window.supabase.createClient(SB_URL, SB_KEY);
+
+// ========== СОСТОЯНИЕ ==========
+let currentUser = JSON.parse(localStorage.getItem('zenit-user') || 'null');
+if (!currentUser) location.href = 'z4.html';
+
+const ROLE_TITLES = {
+  MANAGER: 'Менеджер',
+  DEPUTY_DIRECTOR: 'Заместитель директора',
+  DIRECTOR: 'Директор',
+  TU: 'ТУ', OD: 'ОД', ID: 'ИД',
+  MODERATOR_ZENIT: 'Модератор Zenit',
+  LEAD_DEV_ZENIT: 'Ведущий разработчик Zenit'
+};
+
+const canAdd = currentUser.role !== 'MANAGER';
+
+let allItems = [];
+
+// ========== ЗАГОЛОВОК ==========
+document.getElementById('subtitle').textContent = currentUser.name + ' · ' + (ROLE_TITLES[currentUser.role] || currentUser.role);
+
+// ========== FAB ==========
+if (!canAdd) {
+  document.getElementById('fab').style.display = 'none';
+}
+
+// ========== ЗАГРУЗКА ==========
+async function loadItems() {
+  try {
+    const { data, error } = await window.SB
+      .from('slang')
+      .select('*')
+      .order('term', { ascending: true });
+
+    if (error) throw error;
+
+    allItems = data || [];
+    render();
+  } catch (e) {
+    document.getElementById('slang-list').innerHTML = '<div class="empty">Ошибка: ' + e.message + '</div>';
+    console.error(e);
+  }
+}
+
+// ========== РЕНДЕР ==========
+function render() {
+  const q = document.getElementById('search-input').value.toLowerCase().trim();
+  let filtered = allItems;
+
+  if (q) {
+    filtered = filtered.filter(item =>
+      (item.term || '').toLowerCase().includes(q) ||
+      (item.definition || '').toLowerCase().includes(q)
+    );
+  }
+
+  const container = document.getElementById('slang-list');
+
+  if (filtered.length === 0) {
+    container.innerHTML = `
+      <div class="empty">
+        <div class="empty-icon">📖</div>
+        <p>${q ? 'Ничего не найдено по «' + escapeHtml(q) + '»' : 'Словарь пуст'}</p>
+        ${canAdd && !q ? '<p style="font-size:12px; margin-top:8px;">Нажмите ➕ Добавить, чтобы добавить термин</p>' : ''}
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = filtered.map(item => {
+    const isMine = item.author === currentUser.name;
+    const canDelete = isMine || ['DIRECTOR', 'TU', 'OD', 'ID', 'MODERATOR_ZENIT', 'LEAD_DEV_ZENIT'].includes(currentUser.role);
+
+    return `
+      <div class="slang-card">
+        <div class="slang-icon">📖</div>
+        <div class="slang-info">
+          <div class="slang-term">${escapeHtml(item.term)}</div>
+          <div class="slang-definition">${escapeHtml(item.definition)}</div>
+          <div class="slang-meta">Добавил: ${escapeHtml(item.author)}</div>
+        </div>
+        ${canDelete ? `<button class="delete-btn" onclick="deleteTerm(${item.id})" title="Удалить">🗑</button>` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+// ========== МОДАЛКА ==========
+function openAddModal() {
+  if (!canAdd) { alert('У вас нет прав'); return; }
+  document.getElementById('edit-term').value = '';
+  document.getElementById('edit-definition').value = '';
+  document.getElementById('save-btn').disabled = false;
+  document.getElementById('modal').classList.add('show');
+  setTimeout(() => document.getElementById('edit-term').focus(), 100);
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('show');
+}
+
+// ========== СОХРАНЕНИЕ ==========
+async function saveTerm() {
+  const term = document.getElementById('edit-term').value.trim();
+  const definition = document.getElementById('edit-definition').value.trim();
+  const btn = document.getElementById('save-btn');
+
+  if (!term) { alert('Введите термин'); return; }
+  if (!definition) { alert('Введите определение'); return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Сохранение...';
+
+  try {
+    const { error } = await window.SB.from('slang').insert({
+      term: term,
+      definition: definition,
+      author: currentUser.name,
+      role: currentUser.role,
+    });
+
+    if (error) throw error;
+
+    closeModal();
+    await loadItems();
+  } catch (e) {
+    alert('Ошибка: ' + e.message);
+    console.error(e);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Сохранить';
+  }
+}
+
+// ========== УДАЛЕНИЕ ==========
+async function deleteTerm(id) {
+  if (!confirm('Удалить термин?')) return;
+  try {
+    const { error } = await window.SB.from('slang').delete().eq('id', id);
+    if (error) throw error;
+    await loadItems();
+  } catch (e) {
+    alert('Ошибка: ' + e.message);
+  }
+}
+
+// ========== УТИЛИТЫ ==========
+function escapeHtml(text) {
+  if (!text) return '';
+  return String(text).replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+}
+
+// Закрытие по клику на фон
+document.getElementById('modal').addEventListener('click', (e) => {
+  if (e.target.id === 'modal') closeModal();
+});
+
+// Enter в поле «Термин» → перейти к определению
+document.getElementById('edit-term').addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    document.getElementById('edit-definition').focus();
+  }
+});
+
+// Ctrl + Enter → сохранить
+document.getElementById('edit-definition').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && e.ctrlKey) {
+    e.preventDefault();
+    saveTerm();
+  }
+});
+
+// ========== СТАРТ ==========
+loadItems();
+</script>
+</body>
+</html>

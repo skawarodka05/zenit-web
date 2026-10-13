@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>ZENIT · Контакты</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+body { background: #0A0A1A; color: #fff; min-height: 100vh; }
+.hidden { display: none !important; }
+
+/* Шапка */
+.header {
+  display: flex; align-items: center; gap: 12px;
+  padding: 16px; background: #14142B;
+  border-bottom: 1px solid rgba(0, 255, 255, 0.3);
+  position: sticky; top: 0; z-index: 100;
+}
+.back-btn {
+  width: 42px; height: 42px; border-radius: 12px;
+  background: #0A0A1A; border: 1px solid rgba(0, 255, 255, 0.5);
+  color: #00FFFF; font-size: 20px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.header-title { flex: 1; }
+.header-title h1 { font-size: 18px; font-weight: 700; }
+.header-title p { font-size: 12px; color: #00FFFF; margin-top: 2px; }
+
+/* Контейнер */
+.container { max-width: 900px; margin: 0 auto; padding: 16px 16px 100px; }
+
+/* Поиск */
+.search-bar { margin-bottom: 12px; }
+.search-input {
+  width: 100%; padding: 14px 18px; border-radius: 12px;
+  background: #14142B; border: 1px solid rgba(0, 255, 255, 0.4);
+  color: #fff; font-size: 14px; outline: none;
+}
+.search-input:focus { border-color: #00FFFF; box-shadow: 0 0 12px rgba(0, 255, 255, 0.3); }
+.search-input::placeholder { color: #606060; }
+
+/* Фильтр отделов */
+.departments {
+  display: flex; gap: 8px; overflow-x: auto;
+  padding-bottom: 12px; margin-bottom: 16px;
+  scrollbar-width: thin;
+}
+.departments::-webkit-scrollbar { height: 4px; }
+.departments::-webkit-scrollbar-thumb { background: #00FFFF; border-radius: 2px; }
+.dept-chip {
+  padding: 8px 16px; border-radius: 20px; white-space: nowrap;
+  background: #14142B; border: 1px solid rgba(0, 255, 255, 0.4);
+  color: #B0B0C0; cursor: pointer; font-size: 13px; font-weight: 600;
+  transition: all 0.2s;
+}
+.dept-chip.active {
+  background: rgba(255, 0, 255, 0.25);
+  border-color: #FF00FF;
+  color: #FF00FF;
+}
+
+/* Список контактов */
+.contacts-list { display: flex; flex-direction: column; gap: 10px; }
+
+.contact-card {
+  display: flex; align-items: center; gap: 12px;
+  background: #14142B; border: 1px solid rgba(0, 255, 255, 0.4);
+  border-radius: 14px; padding: 14px;
+  transition: all 0.2s;
+}
+.contact-card:hover { border-color: #00FFFF; box-shadow: 0 0 15px rgba(0, 255, 255, 0.2); }
+
+.contact-avatar {
+  width: 52px; height: 52px; border-radius: 50%;
+  background: rgba(0, 255, 255, 0.15); color: #00FFFF;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; font-weight: 900; flex-shrink: 0;
+}
+
+.contact-info { flex: 1; min-width: 0; }
+.contact-name { font-size: 16px; font-weight: 700; margin-bottom: 2px; }
+.contact-meta { font-size: 12px; color: #B0B0C0; margin-bottom: 4px; }
+.contact-phone { font-size: 13px; color: #FF00FF; margin-bottom: 2px; }
+.contact-email { font-size: 12px; color: #00FFFF; }
+
+/* Кнопки на карточке */
+.contact-actions {
+  display: flex; gap: 6px; align-items: center; flex-shrink: 0;
+}
+.action-btn {
+  width: 38px; height: 38px; border-radius: 50%;
+  background: transparent; border: 1px solid rgba(0, 255, 255, 0.4);
+  color: #00FFFF; cursor: pointer; font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.action-btn:hover { background: rgba(0, 255, 255, 0.15); }
+.action-btn.fav { border-color: transparent; color: #606060; }
+.action-btn.fav.active { color: #FFD700; }
+.action-btn.pink { border-color: rgba(255, 0, 255, 0.5); color: #FF00FF; }
+.action-btn.pink:hover { background: rgba(255, 0, 255, 0.15); }
+
+/* FAB */
+.fab {
+  position: fixed; bottom: 24px; right: 24px;
+  padding: 16px 24px; border: none; border-radius: 50px;
+  background: linear-gradient(90deg, #FF00FF, #00FFFF);
+  color: #fff; font-size: 15px; font-weight: 700;
+  cursor: pointer; box-shadow: 0 0 25px rgba(0, 255, 255, 0.5);
+  display: flex; align-items: center; gap: 8px;
+  transition: all 0.2s;
+}
+.fab:hover { transform: translateY(-3px); box-shadow: 0 0 35px rgba(0, 255, 255, 0.7); }
+
+/* Модалка */
+.modal-bg {
+  position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8);
+  display: none; align-items: center; justify-content: center;
+  z-index: 500; padding: 20px;
+}
+.modal-bg.show { display: flex; }
+.modal {
+  background: #14142B; border: 1px solid rgba(0, 255, 255, 0.4);
+  border-radius: 16px; padding: 24px; max-width: 500px; width: 100%;
+  max-height: 90vh; overflow-y: auto;
+}
+.modal-title { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
+
+/* Поля формы */
+.form-group { margin-bottom: 14px; }
+.form-label { display: block; font-size: 12px; color: #B0B0C0; margin-bottom: 6px; font-weight: 600; }
+.form-input, .form-select {
+  width: 100%; padding: 12px 14px; border-radius: 10px;
+  background: #0A0A1A; border: 1px solid rgba(0, 255, 255, 0.4);
+  color: #fff; font-size: 14px; outline: none; font-family: inherit;
+}
+.form-input:focus, .form-select:focus { border-color: #00FFFF; }
+
+/* Кнопки модалки */
+.modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+.modal-btn {
+  flex: 1; padding: 14px; border-radius: 12px;
+  font-size: 15px; font-weight: 700; cursor: pointer; border: none;
+}
+.modal-btn.save { background: linear-gradient(90deg, #FF00FF, #00FFFF); color: #fff; }
+.modal-btn.cancel { background: transparent; border: 1px solid #606060; color: #B0B0C0; }
+.modal-btn.delete { background: rgba(255, 0, 255, 0.15); border: 1px solid #FF00FF; color: #FF00FF; }
+
+/* Пустой экран */
+.empty { text-align: center; padding: 60px 20px; color: #606060; }
+.empty-icon { font-size: 60px; margin-bottom: 12px; }
+
+/* Загрузка */
+.loading { text-align: center; padding: 40px; color: #00FFFF; }
+</style>
+</head>
+<body>
+
+<!-- Шапка -->
+<div class="header">
+  <button class="back-btn" onclick="location.href='z4.html'">←</button>
+  <div class="header-title">
+    <h1>Адресная книга</h1>
+    <p id="subtitle">Загрузка...</p>
+  </div>
+</div>
+
+<!-- Контейнер -->
+<div class="container">
+
+  <!-- Поиск -->
+  <div class="search-bar">
+    <input type="text" class="search-input" id="search-input" placeholder="🔍 Поиск по имени, телефону, email..." oninput="renderContacts()">
+  </div>
+
+  <!-- Фильтр отделов -->
+  <div class="departments" id="departments"></div>
+
+  <!-- Контакты -->
+  <div class="contacts-list" id="contacts-list">
+    <div class="loading">Загрузка...</div>
+  </div>
+
+</div>
+
+<!-- FAB -->
+<button class="fab" id="fab" onclick="openAddModal()">
+  ➕ Добавить
+</button>
+
+<!-- Модалка добавления/редактирования -->
+<div class="modal-bg" id="modal">
+  <div class="modal">
+    <div class="modal-title" id="modal-title">Новый контакт</div>
+
+    <div class="form-group">
+      <label class="form-label">Имя *</label>
+      <input type="text" class="form-input" id="edit-name" placeholder="Иван Иванов">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Телефон</label>
+      <input type="tel" class="form-input" id="edit-phone" placeholder="+7 900 000-00-00">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Email</label>
+      <input type="email" class="form-input" id="edit-email" placeholder="example@zenit.ru">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Должность</label>
+      <input type="text" class="form-input" id="edit-position" placeholder="Инженер">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Отдел</label>
+      <select class="form-select" id="edit-department"></select>
+    </div>
+
+    <div class="modal-actions">
+      <button class="modal-btn delete" id="modal-delete" style="display:none;" onclick="deleteContact()">Удалить</button>
+      <button class="modal-btn cancel" onclick="closeModal()">Отмена</button>
+      <button class="modal-btn save" onclick="saveContact()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ========== КОНФИГ ==========
+const SB_URL = 'https://owkizfikhtiqbwftqgfd.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93a2l6ZmlraHRpcWJ3ZnRxZ2ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE0OTYxMDYsImV4cCI6MjEwNzA3MjEwNn0.EHVyXiBYuSJrDVd_k5zAbwqT3ZPFF43p5Uh4_huKoOo';
+
+window.SB = window.supabase.createClient(SB_URL, SB_KEY);
+
+// ========== ОТДЕЛЫ ==========
+const DEPARTMENTS = [
+  'Внутри БК',
+  'Вистекс',
+  'ИВЛ',
+  'Регион Пиво',
+  'Лидер',
+  'Технологии монтажа',
+  'Прочие обслуживающие компании',
+  'Контакты поставщиков услуг'
+];
+const FILTER_DEPARTMENTS = ['Все', ...DEPARTMENTS];
+
+// ========== СОСТОЯНИЕ ==========
+let currentUser = JSON.parse(localStorage.getItem('zenit-user') || 'null');
+if (!currentUser) location.href = 'z4.html';
+
+const ROLE_TITLES = {
+  MANAGER: 'Менеджер',
+  DEPUTY_DIRECTOR: 'Заместитель директора',
+  DIRECTOR: 'Директор',
+  TU: 'ТУ', OD: 'ОД', ID: 'ИД',
+  MODERATOR_ZENIT: 'Модератор Zenit',
+  LEAD_DEV_ZENIT: 'Ведущий разработчик Zenit'
+};
+
+// Права на редактирование
+const canEdit = ['DIRECTOR', 'TU', 'OD', 'ID', 'DEPUTY_DIRECTOR', 'MODERATOR_ZENIT', 'LEAD_DEV_ZENIT']
+  .includes(currentUser.role);
+
+let allContacts = [];
+let selectedDept = 'Все';
+let editingContactId = null;
+
+// ========== ЗАГОЛОВОК ==========
+document.getElementById('subtitle').textContent = currentUser.name + ' · ' + (ROLE_TITLES[currentUser.role] || currentUser.role);
+
+// ========== РЕНДЕР ЧИПОВ ==========
+document.getElementById('departments').innerHTML = FILTER_DEPARTMENTS.map(d => `
+  <div class="dept-chip ${d === 'Все' ? 'active' : ''}" onclick="selectDepartment('${d}')">${d}</div>
+`).join('');
+
+// ========== ЗАГРУЗКА КОНТАКТОВ ==========
+async function loadContacts() {
+  try {
+    const { data, error } = await window.SB
+      .from('contacts')
+      .select('*')
+      .order('name', { ascending: true });
+
+    if (error) throw error;
+
+    allContacts = data || [];
+    renderContacts();
+  } catch (e) {
+    document.getElementById('contacts-list').innerHTML = '<div class="empty">Ошибка: ' + e.message + '</div>';
+    console.error(e);
+  }
+}
+
+// ========== ФИЛЬТРАЦИЯ И РЕНДЕР ==========
+function renderContacts() {
+  const q = document.getElementById('search-input').value.toLowerCase().trim();
+
+  let filtered = allContacts;
+
+  // Фильтр по отделу
+  if (selectedDept !== 'Все') {
+    filtered = filtered.filter(c => c.department === selectedDept);
+  }
+
+  // Поиск
+  if (q) {
+    filtered = filtered.filter(c =>
+      (c.name || '').toLowerCase().includes(q) ||
+      (c.phone || '').toLowerCase().includes(q) ||
+      (c.email || '').toLowerCase().includes(q) ||
+      (c.position || '').toLowerCase().includes(q) ||
+      (c.department || '').toLowerCase().includes(q)
+    );
+  }
+
+  // Сортировка: избранные сверху
+  filtered.sort((a, b) => {
+    if (a.is_favorite && !b.is_favorite) return -1;
+    if (!a.is_favorite && b.is_favorite) return 1;
+    return (a.name || '').localeCompare(b.name || '');
+  });
+
+  const container = document.getElementById('contacts-list');
+
+  if (filtered.length === 0) {
+    container.innerHTML = `
+      <div class="empty">
+        <div class="empty-icon">🔍</div>
+        <p>${q ? 'Ничего не найдено по «' + escapeHtml(q) + '»' : 'Нет контактов'}</p>
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = filtered.map(c => {
+    const initial = (c.name || '?').charAt(0).toUpperCase();
+    return `
+      <div class="contact-card">
+        <div class="contact-avatar">${initial}</div>
+        <div class="contact-info">
+          <div class="contact-name">${escapeHtml(c.name)}</div>
+          ${(c.position || c.department) ? `<div class="contact-meta">${[c.position, c.department].filter(Boolean).map(escapeHtml).join(' · ')}</div>` : ''}
+          ${c.phone ? `<div class="contact-phone">${escapeHtml(c.phone)}</div>` : ''}
+          ${c.email ? `<div class="contact-email">${escapeHtml(c.email)}</div>` : ''}
+        </div>
+        <div class="contact-actions">
+          <button class="action-btn fav ${c.is_favorite ? 'active' : ''}" onclick="toggleFavorite(${c.id}, ${c.is_favorite || false})" title="Избранное">★</button>
+          ${c.email ? `<button class="action-btn" onclick="sendEmail('${escapeAttr(c.email)}')" title="Написать">✉</button>` : ''}
+          ${canEdit ? `<button class="action-btn" onclick="openEditModal(${c.id})" title="Редактировать">✏</button>` : ''}
+          ${c.phone ? `<button class="action-btn pink" onclick="callPhone('${escapeAttr(c.phone)}')" title="Позвонить">📞</button>` : ''}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ========== ВЫБОР ОТДЕЛА ==========
+function selectDepartment(dept) {
+  selectedDept = dept;
+  document.querySelectorAll('.dept-chip').forEach(el => {
+    el.classList.toggle('active', el.textContent === dept);
+  });
+  renderContacts();
+}
+
+// ========== ИЗБРАННОЕ ==========
+async function toggleFavorite(id, currentValue) {
+  const { error } = await window.SB.from('contacts')
+    .update({ is_favorite: !currentValue })
+    .eq('id', id);
+
+  if (error) { alert('Ошибка: ' + error.message); return; }
+  await loadContacts();
+}
+
+// ========== ЗВОНОК / ПОЧТА ==========
+function callPhone(phone) {
+  const clean = phone.replace(/[^\d+]/g, '');
+  window.location.href = 'tel:' + clean;
+}
+
+function sendEmail(email) {
+  window.location.href = 'mailto:' + email;
+}
+
+// ========== МОДАЛКА ==========
+function openAddModal() {
+  if (!canEdit) { alert('У вас нет прав для добавления контактов'); return; }
+  editingContactId = null;
+  document.getElementById('modal-title').textContent = 'Новый контакт';
+  document.getElementById('edit-name').value = '';
+  document.getElementById('edit-phone').value = '';
+  document.getElementById('edit-email').value = '';
+  document.getElementById('edit-position').value = '';
+  document.getElementById('edit-department').value = DEPARTMENTS[0];
+  document.getElementById('modal-delete').style.display = 'none';
+  document.getElementById('modal').classList.add('show');
+}
+
+function openEditModal(id) {
+  const c = allContacts.find(x => x.id === id);
+  if (!c) return;
+
+  editingContactId = id;
+  document.getElementById('modal-title').textContent = 'Редактировать контакт';
+  document.getElementById('edit-name').value = c.name || '';
+  document.getElementById('edit-phone').value = c.phone || '';
+  document.getElementById('edit-email').value = c.email || '';
+  document.getElementById('edit-position').value = c.position || '';
+  document.getElementById('edit-department').value = c.department || DEPARTMENTS[0];
+  document.getElementById('modal-delete').style.display = canEdit ? 'block' : 'none';
+  document.getElementById('modal').classList.add('show');
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('show');
+  editingContactId = null;
+}
+
+// Заполняем выпадающий список отделов
+document.getElementById('edit-department').innerHTML = DEPARTMENTS.map(d => `<option value="${d}">${d}</option>`).join('');
+
+// ========== СОХРАНЕНИЕ КОНТАКТА ==========
+async function saveContact() {
+  const name = document.getElementById('edit-name').value.trim();
+  const phone = document.getElementById('edit-phone').value.trim();
+  const email = document.getElementById('edit-email').value.trim();
+  const position = document.getElementById('edit-position').value.trim();
+  const department = document.getElementById('edit-department').value;
+
+  if (!name) { alert('Введите имя'); return; }
+  if (!phone && !email) { alert('Введите телефон или email'); return; }
+
+  const data = { name, phone, email, position, department };
+
+  try {
+    if (editingContactId) {
+      // Обновление
+      const { error } = await window.SB.from('contacts').update(data).eq('id', editingContactId);
+      if (error) throw error;
+    } else {
+      // Добавление
+      const { error } = await window.SB.from('contacts').insert({
+        ...data,
+        is_favorite: false,
+      });
+      if (error) throw error;
+    }
+
+    closeModal();
+    await loadContacts();
+  } catch (e) {
+    alert('Ошибка: ' + e.message);
+    console.error(e);
+  }
+}
+
+// ========== УДАЛЕНИЕ ==========
+async function deleteContact() {
+  if (!editingContactId) return;
+  if (!confirm('Удалить контакт?')) return;
+
+  try {
+    const { error } = await window.SB.from('contacts').delete().eq('id', editingContactId);
+    if (error) throw error;
+    closeModal();
+    await loadContacts();
+  } catch (e) {
+    alert('Ошибка: ' + e.message);
+  }
+}
+
+// ========== УТИЛИТЫ ==========
+function escapeHtml(text) {
+  if (!text) return '';
+  return String(text).replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+}
+
+function escapeAttr(text) {
+  if (!text) return '';
+  return String(text).replace(/'/g, "\\'");
+}
+
+// Закрытие модалки по клику на фон
+document.getElementById('modal').addEventListener('click', (e) => {
+  if (e.target.id === 'modal') closeModal();
+});
+
+// ========== FAB СКРЫВАЕМ, ЕСЛИ НЕТ ПРАВ ==========
+if (!canEdit) {
+  document.getElementById('fab').style.display = 'none';
+}
+
+// ========== СТАРТ ==========
+loadContacts();
+</script>
+</body>
+</html>

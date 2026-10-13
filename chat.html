@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>ZENIT · Чат</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+body { background: #0A0A1A; color: #fff; min-height: 100vh; }
+.hidden { display: none !important; }
+
+/* Шапка */
+.header {
+  display: flex; align-items: center; gap: 12px;
+  padding: 16px; background: #14142B;
+  border-bottom: 1px solid rgba(0, 255, 255, 0.3);
+  position: sticky; top: 0; z-index: 100;
+}
+.back-btn {
+  width: 42px; height: 42px; border-radius: 12px;
+  background: #0A0A1A; border: 1px solid rgba(0, 255, 255, 0.5);
+  color: #00FFFF; font-size: 20px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.back-btn:hover { background: rgba(0, 255, 255, 0.15); }
+.header-title { flex: 1; }
+.header-title h1 { font-size: 18px; font-weight: 700; }
+.header-title p { font-size: 12px; color: #00FFFF; margin-top: 2px; }
+
+/* Основной контейнер */
+.container { max-width: 700px; margin: 0 auto; padding: 16px; }
+
+/* Поле ввода */
+.composer {
+  background: #14142B; border: 1px solid rgba(0, 255, 255, 0.4);
+  border-radius: 14px; padding: 16px; margin-bottom: 20px;
+}
+.composer-title { font-size: 14px; font-weight: 700; margin-bottom: 10px; color: #00FFFF; }
+.composer input[type="text"], .composer textarea {
+  width: 100%; padding: 12px 14px; border-radius: 10px;
+  background: #0A0A1A; border: 1px solid rgba(0, 255, 255, 0.3);
+  color: #fff; font-size: 14px; outline: none; margin-bottom: 10px;
+  font-family: inherit; resize: vertical;
+}
+.composer input:focus, .composer textarea:focus {
+  border-color: #00FFFF; box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+}
+.composer textarea { min-height: 80px; max-height: 200px; }
+.composer-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.file-btn {
+  padding: 10px 14px; border-radius: 10px;
+  background: transparent; border: 1px solid #00FFFF;
+  color: #00FFFF; font-size: 13px; cursor: pointer; font-weight: 600;
+}
+.file-btn.active { background: rgba(255, 0, 255, 0.15); border-color: #FF00FF; color: #FF00FF; }
+.file-btn:hover { background: rgba(0, 255, 255, 0.1); }
+.post-btn {
+  margin-left: auto; padding: 12px 24px;
+  background: linear-gradient(90deg, #FF00FF, #00FFFF);
+  border: none; border-radius: 10px; color: #fff;
+  font-weight: 700; cursor: pointer; font-size: 14px;
+}
+.post-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Пост */
+.post {
+  background: #14142B; border: 1px solid rgba(0, 255, 255, 0.3);
+  border-radius: 14px; padding: 16px; margin-bottom: 14px;
+}
+.post-header {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
+}
+.post-avatar {
+  width: 42px; height: 42px; border-radius: 50%;
+  background: linear-gradient(135deg, #FF00FF, #00FFFF);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 900; font-size: 18px; flex-shrink: 0;
+  background-size: cover; background-position: center;
+}
+.post-author { flex: 1; }
+.post-author-name { font-size: 14px; font-weight: 700; }
+.post-author-role { font-size: 11px; color: #00FFFF; }
+.post-delete {
+  width: 32px; height: 32px; border-radius: 8px;
+  background: transparent; border: 1px solid rgba(255, 0, 255, 0.3);
+  color: #FF00FF; cursor: pointer; font-size: 16px;
+}
+.post-delete:hover { background: rgba(255, 0, 255, 0.15); }
+.post-title { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+.post-content { font-size: 14px; color: #D0D0E0; line-height: 1.5; margin-bottom: 10px; }
+.post-image {
+  width: 100%; max-height: 300px; object-fit: cover;
+  border-radius: 10px; margin-bottom: 10px;
+  border: 1px solid rgba(255, 0, 255, 0.3); cursor: pointer;
+}
+.post-file {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 8px 14px; background: #0A0A1A;
+  border: 1px solid rgba(0, 255, 255, 0.4); border-radius: 10px;
+  color: #00FFFF; font-size: 13px; text-decoration: none;
+  margin-bottom: 10px;
+}
+.post-file:hover { background: rgba(0, 255, 255, 0.1); }
+
+/* Комментарии */
+.comments-toggle {
+  display: flex; align-items: center; gap: 6px;
+  color: #00FFFF; font-size: 13px; font-weight: 600;
+  cursor: pointer; padding: 6px 0;
+}
+.comments-toggle:hover { color: #FF00FF; }
+.comments-list { margin-top: 10px; border-top: 1px solid rgba(0, 255, 255, 0.15); padding-top: 10px; }
+.comment {
+  display: flex; align-items: flex-start; gap: 8px;
+  padding: 8px; background: #0A0A1A; border-radius: 8px;
+  margin-bottom: 6px;
+}
+.comment-author { color: #FF00FF; font-size: 11px; font-weight: 700; }
+.comment-text { color: #fff; font-size: 13px; margin-top: 2px; }
+.comment-delete {
+  background: transparent; border: none; color: #606060;
+  cursor: pointer; font-size: 14px; padding: 2px 6px;
+}
+.comment-delete:hover { color: #FF00FF; }
+.comment-form { display: flex; gap: 6px; margin-top: 8px; }
+.comment-form input {
+  flex: 1; padding: 8px 12px; border-radius: 8px;
+  background: #0A0A1A; border: 1px solid rgba(0, 255, 255, 0.3);
+  color: #fff; font-size: 13px; outline: none;
+}
+.comment-form input:focus { border-color: #00FFFF; }
+.comment-form button {
+  padding: 8px 14px; border-radius: 8px;
+  background: #00FFFF; border: none; color: #0A0A1A;
+  font-weight: 700; cursor: pointer; font-size: 13px;
+}
+
+/* Загрузка, пустой экран */
+.loading { text-align: center; padding: 40px; color: #00FFFF; }
+.empty { text-align: center; padding: 60px 20px; color: #606060; }
+.empty-icon { font-size: 60px; margin-bottom: 12px; }
+
+/* Просмотр картинки на весь экран */
+#viewer {
+  position: fixed; inset: 0; background: rgba(0, 0, 0, 0.95);
+  display: none; align-items: center; justify-content: center; z-index: 1000;
+}
+#viewer img { max-width: 90%; max-height: 90%; }
+#viewer .close {
+  position: absolute; top: 20px; right: 20px;
+  width: 48px; height: 48px; border-radius: 50%;
+  background: rgba(255, 0, 255, 0.8); border: none;
+  color: #fff; font-size: 24px; cursor: pointer;
+}
+</style>
+</head>
+<body>
+
+<!-- Шапка -->
+<div class="header">
+  <button class="back-btn" onclick="goBack()">←</button>
+  <div class="header-title">
+    <h1 id="db-name">База Документов</h1>
+    <p id="db-role">—</p>
+  </div>
+</div>
+
+<!-- Контейнер -->
+<div class="container">
+
+  <!-- Форма создания поста -->
+  <div class="composer" id="composer" style="display:none;">
+    <div class="composer-title">✏️ Создать пост</div>
+    <input type="text" id="post-title" placeholder="Заголовок">
+    <textarea id="post-content" placeholder="Текст поста..."></textarea>
+    <div class="composer-actions">
+      <button class="file-btn" id="file-btn" onclick="document.getElementById('file-input').click()">📎 Файл</button>
+      <button class="file-btn" id="image-btn" onclick="document.getElementById('image-input').click()">🖼 Фото</button>
+      <button class="post-btn" id="submit-btn" onclick="submitPost()">Опубликовать</button>
+    </div>
+    <input type="file" id="file-input" style="display:none;" onchange="onFileSelected(this, 'file')">
+    <input type="file" id="image-input" accept="image/*" style="display:none;" onchange="onFileSelected(this, 'image')">
+  </div>
+
+  <!-- Посты -->
+  <div id="posts-container">
+    <div class="loading">Загрузка...</div>
+  </div>
+
+</div>
+
+<!-- Просмотр картинки на весь экран -->
+<div id="viewer" onclick="this.style.display='none'">
+  <button class="close" onclick="document.getElementById('viewer').style.display='none'">×</button>
+  <img id="viewer-img" src="">
+</div>
+
+<script>
+// ========== КОНФИГ ==========
+const SB_URL = 'https://owkizfikhtiqbwftqgfd.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93a2l6ZmlraHRpcWJ3ZnRxZ2ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE0OTYxMDYsImV4cCI6MjEwNzA3MjEwNn0.EHVyXiBYuSJrDVd_k5zAbwqT3ZPFF43p5Uh4_huKoOo';
+window.SB = window.supabase.createClient(SB_URL, SB_KEY);
+
+// ========== СОСТОЯНИЕ ==========
+let currentUser = JSON.parse(localStorage.getItem('zenit-user') || 'null');
+let dbName = new URLSearchParams(location.search).get('db') || 'База Документов';
+let selectedFile = null;
+let selectedImage = null;
+
+// ========== ПРОВЕРКА АВТОРИЗАЦИИ ==========
+if (!currentUser) {
+  location.href = '/z4.html';
+}
+
+// ========== ЗАГОЛОВОК ==========
+document.getElementById('db-name').textContent = dbName;
+document.getElementById('db-role').textContent = currentUser.name + ' · ' + (currentUser.role || '');
+
+// ========== ЗАГРУЗКА ПОСТОВ ==========
+async function loadPosts() {
+  const container = document.getElementById('posts-container');
+  container.innerHTML = '<div class="loading">Загрузка...</div>';
+
+  try {
+    const { data, error } = await window.SB
+      .from('posts')
+      .select('*')
+      .eq('database_name', dbName)
+      .order('id', { ascending: false });
+
+    if (error) throw error;
+
+    if (!data || data.length === 0) {
+      container.innerHTML = `
+        <div class="empty">
+          <div class="empty-icon">📄</div>
+          <p>Пока нет постов в "${dbName}"</p>
+          <p style="font-size:12px; margin-top:8px;">Создайте первый пост ↑</p>
+        </div>`;
+      return;
+    }
+
+    container.innerHTML = '';
+    for (const post of data) {
+      const postEl = await renderPost(post);
+      container.appendChild(postEl);
+    }
+  } catch (e) {
+    container.innerHTML = '<div class="empty">Ошибка загрузки: ' + e.message + '</div>';
+    console.error(e);
+  }
+}
+
+async function renderPost(post) {
+  const el = document.createElement('div');
+  el.className = 'post';
+  el.dataset.postId = post.id;
+
+  const isMine = post.author === currentUser.name;
+  const canDelete = isMine;  // (для простоты — только свои)
+
+  const initial = post.author ? post.author.charAt(0).toUpperCase() : '?';
+
+  el.innerHTML = `
+    <div class="post-header">
+      <div class="post-avatar">${initial}</div>
+      <div class="post-author">
+        <div class="post-author-name">${escapeHtml(post.author)}</div>
+        <div class="post-author-role">${escapeHtml(post.role || '')}</div>
+      </div>
+      ${canDelete ? `<button class="post-delete" onclick="deletePost(${post.id})">🗑</button>` : ''}
+    </div>
+    <div class="post-title">${escapeHtml(post.title)}</div>
+    <div class="post-content">${escapeHtml(post.content)}</div>
+    ${post.image_url ? `<img class="post-image" src="${post.image_url}" onclick="viewImage('${post.image_url}')">` : ''}
+    ${post.file_url ? `<a class="post-file" href="${post.file_url}" target="_blank">📎 Скачать вложение</a>` : ''}
+    <div class="comments-toggle" onclick="toggleComments(${post.id})">
+      💬 Обсуждение <span id="comments-count-${post.id}"></span>
+    </div>
+    <div class="comments-list hidden" id="comments-${post.id}">
+      <div id="comments-content-${post.id}"></div>
+      <div class="comment-form">
+        <input type="text" id="comment-input-${post.id}" placeholder="Комментарий...">
+        <button onclick="addComment(${post.id})">→</button>
+      </div>
+    </div>
+  `;
+
+  // Загружаем количество комментариев
+  loadCommentsCount(post.id);
+
+  return el;
+}
+
+// ========== СОЗДАНИЕ ПОСТА ==========
+document.getElementById('composer').style.display = 'block';
+
+function onFileSelected(input, type) {
+  const file = input.files[0];
+  if (!file) return;
+
+  if (type === 'file') {
+    selectedFile = file;
+    document.getElementById('file-btn').textContent = '📎 ' + file.name.slice(0, 15);
+    document.getElementById('file-btn').classList.add('active');
+  } else {
+    selectedImage = file;
+    document.getElementById('image-btn').textContent = '🖼 ' + file.name.slice(0, 15);
+    document.getElementById('image-btn').classList.add('active');
+  }
+}
+
+async function uploadFile(file, bucket) {
+  const fileName = 'web_' + Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+  const { data, error } = await window.SB.storage.from(bucket).upload(fileName, file);
+  if (error) throw error;
+  const { data: urlData } = window.SB.storage.from(bucket).getPublicUrl(fileName);
+  return urlData.publicUrl;
+}
+
+async function submitPost() {
+  const title = document.getElementById('post-title').value.trim();
+  const content = document.getElementById('post-content').value.trim();
+  const btn = document.getElementById('submit-btn');
+
+  if (!title) { alert('Введите заголовок'); return; }
+  if (!content) { alert('Введите текст'); return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Публикация...';
+
+  try {
+    let fileUrl = null;
+    let imageUrl = null;
+
+    if (selectedFile) {
+      fileUrl = await uploadFile(selectedFile, 'attachments');
+    }
+    if (selectedImage) {
+      imageUrl = await uploadFile(selectedImage, 'images');
+    }
+
+    const { error } = await window.SB.from('posts').insert({
+      database_name: dbName,
+      title: title,
+      content: content,
+      author: currentUser.name,
+      role: currentUser.role,
+      has_file: !!fileUrl,
+      has_image: !!imageUrl,
+      file_url: fileUrl,
+      image_url: imageUrl,
+    });
+
+    if (error) throw error;
+
+    // Сброс формы
+    document.getElementById('post-title').value = '';
+    document.getElementById('post-content').value = '';
+    document.getElementById('file-btn').textContent = '📎 Файл';
+    document.getElementById('file-btn').classList.remove('active');
+    document.getElementById('image-btn').textContent = '🖼 Фото';
+    document.getElementById('image-btn').classList.remove('active');
+    selectedFile = null;
+    selectedImage = null;
+
+    loadPosts();
+  } catch (e) {
+    alert('Ошибка: ' + e.message);
+    console.error(e);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Опубликовать';
+  }
+}
+
+// ========== УДАЛЕНИЕ ПОСТА ==========
+async function deletePost(postId) {
+  if (!confirm('Удалить пост?')) return;
+  const { error } = await window.SB.from('posts').delete().eq('id', postId);
+  if (error) { alert('Ошибка: ' + error.message); return; }
+  loadPosts();
+}
+
+// ========== КОММЕНТАРИИ ==========
+async function loadCommentsCount(postId) {
+  const { count } = await window.SB
+    .from('comments')
+    .select('*', { count: 'exact', head: true })
+    .eq('post_id', postId);
+  const el = document.getElementById('comments-count-' + postId);
+  if (el && count > 0) el.textContent = '(' + count + ')';
+}
+
+async function toggleComments(postId) {
+  const list = document.getElementById('comments-' + postId);
+  if (!list.classList.contains('hidden')) {
+    list.classList.add('hidden');
+    return;
+  }
+  list.classList.remove('hidden');
+  loadComments(postId);
+}
+
+async function loadComments(postId) {
+  const container = document.getElementById('comments-content-' + postId);
+  container.innerHTML = '<div style="color:#606060; font-size:12px; padding:6px;">Загрузка...</div>';
+
+  const { data, error } = await window.SB
+    .from('comments')
+    .select('*')
+    .eq('post_id', postId)
+    .order('id', { ascending: true });
+
+  if (error) { container.innerHTML = '<div style="color:#FF00FF; font-size:12px;">Ошибка: ' + error.message + '</div>'; return; }
+
+  if (!data || data.length === 0) {
+    container.innerHTML = '<div style="color:#606060; font-size:12px; padding:6px;">Нет комментариев</div>';
+    return;
+  }
+
+  container.innerHTML = data.map(c => `
+    <div class="comment">
+      <div style="flex:1;">
+        <div class="comment-author">${escapeHtml(c.author)}</div>
+        <div class="comment-text">${escapeHtml(c.text)}</div>
+      </div>
+      <button class="comment-delete" onclick="deleteComment(${c.id}, ${postId})">🗑</button>
+    </div>
+  `).join('');
+}
+
+async function addComment(postId) {
+  const input = document.getElementById('comment-input-' + postId);
+  const text = input.value.trim();
+  if (!text) return;
+
+  const { error } = await window.SB.from('comments').insert({
+    post_id: postId,
+    author: currentUser.name,
+    role: currentUser.role,
+    text: text,
+  });
+
+  if (error) { alert('Ошибка: ' + error.message); return; }
+  input.value = '';
+  loadComments(postId);
+  loadCommentsCount(postId);
+}
+
+async function deleteComment(commentId, postId) {
+  if (!confirm('Удалить комментарий?')) return;
+  const { error } = await window.SB.from('comments').delete().eq('id', commentId);
+  if (error) { alert('Ошибка: ' + error.message); return; }
+  loadComments(postId);
+  loadCommentsCount(postId);
+}
+
+// ========== ПРОСМОТР КАРТИНКИ ==========
+function viewImage(url) {
+  document.getElementById('viewer-img').src = url;
+  document.getElementById('viewer').style.display = 'flex';
+}
+
+// ========== НАВИГАЦИЯ ==========
+function goBack() {
+  location.href = '/z4.html';
+}
+
+// ========== УТИЛИТЫ ==========
+function escapeHtml(text) {
+  if (!text) return '';
+  return String(text).replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+}
+
+// ========== СТАРТ ==========
+loadPosts();
+</script>
+</body>
+</html>

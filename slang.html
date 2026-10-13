@@ -139,7 +139,7 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; }
 
 <!-- Шапка -->
 <div class="header">
-  <button class="back-btn" onclick="location.href='z4.html'">←</button>
+  <button class="back-btn" onclick="location.href='index.html'">←</button>
   <div class="header-title">
     <h1>База слэнга</h1>
     <p id="subtitle">Загрузка...</p>
@@ -197,7 +197,7 @@ window.SB = window.supabase.createClient(SB_URL, SB_KEY);
 
 // ========== СОСТОЯНИЕ ==========
 let currentUser = JSON.parse(localStorage.getItem('zenit-user') || 'null');
-if (!currentUser) location.href = 'z4.html';
+if (!currentUser) location.href = 'index.html';
 
 const ROLE_TITLES = {
   MANAGER: 'Менеджер',

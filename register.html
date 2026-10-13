@@ -215,7 +215,7 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; }
 
     <!-- Кнопки -->
     <button class="gradient-btn" id="register-btn" onclick="handleRegister()">СОЗДАТЬ АККАУНТ</button>
-    <a class="back-link" href="z4.html">← Уже есть аккаунт? Войти</a>
+    <a class="back-link" href="index.html">← Уже есть аккаунт? Войти</a>
 
   </div>
 </div>
@@ -335,7 +335,7 @@ async function handleRegister() {
     showSuccess('✅ Аккаунт создан! Перенаправление...');
 
     setTimeout(() => {
-      location.href = 'z4.html';
+      location.href = 'index.html';
     }, 1500);
 
   } catch (e) {

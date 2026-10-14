@@ -210,7 +210,7 @@ let selectedImage = null;
 
 // ========== ПРОВЕРКА АВТОРИЗАЦИИ ==========
 if (!currentUser) {
-  location.href = 'index.html';
+  location.href = '/zenit-web/index.html';
 }
 
 // ========== ЗАГОЛОВОК ==========
@@ -288,7 +288,6 @@ async function renderPost(post) {
   `;
 
   loadCommentsCount(post.id);
-
   return el;
 }
 
@@ -333,12 +332,8 @@ async function submitPost() {
     let fileUrl = null;
     let imageUrl = null;
 
-    if (selectedFile) {
-      fileUrl = await uploadFile(selectedFile, 'attachments');
-    }
-    if (selectedImage) {
-      imageUrl = await uploadFile(selectedImage, 'images');
-    }
+    if (selectedFile) fileUrl = await uploadFile(selectedFile, 'attachments');
+    if (selectedImage) imageUrl = await uploadFile(selectedImage, 'images');
 
     const { error } = await window.SB.from('posts').insert({
       database_name: dbName,
@@ -463,7 +458,6 @@ function viewImage(url) {
 
 // ========== НАВИГАЦИЯ (ИСПРАВЛЕНО) ==========
 function goBack() {
-  // history.back() вернет на предыдущую страницу, работая независимо от хостинга
   history.back();
 }
 

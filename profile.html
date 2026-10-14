@@ -14,19 +14,83 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; }
   display: flex; align-items: center; gap: 12px;
   padding: 16px; background: #14142B;
   border-bottom: 1px solid rgba(0, 255, 255, 0.3);
+  position: sticky; top: 0; z-index: 100;
 }
 .back-btn {
   width: 42px; height: 42px; border-radius: 12px;
   background: #0A0A1A; border: 1px solid rgba(0, 255, 255, 0.5);
   color: #00FFFF; font-size: 20px; cursor: pointer;
   display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
 }
 .header-title h1 { font-size: 18px; font-weight: 700; }
 
 /* Контейнер */
 .container { max-width: 600px; margin: 0 auto; padding: 16px; }
 
-/* Баннер */
+/* ==================== ЧУЖОЙ ПРОФИЛЬ ==================== */
+.other-banner {
+  position: relative;
+  height: 200px;
+  overflow: hidden;
+  background: linear-gradient(135deg, rgba(255,0,255,0.25), rgba(0,255,255,0.25));
+  background-size: cover;
+  background-position: center;
+}
+.other-banner-gradient {
+  position: absolute; inset: auto 0 0 0; height: 100px;
+  background: linear-gradient(to top, #0A0A1A, transparent);
+}
+
+.other-avatar-section {
+  text-align: center; margin-top: -70px; position: relative;
+}
+.other-avatar-outer {
+  width: 140px; height: 140px; border-radius: 50%; margin: 0 auto;
+  background: #0A0A1A; padding: 4px;
+}
+.other-avatar {
+  width: 100%; height: 100%; border-radius: 50%;
+  background: linear-gradient(135deg, rgba(255,0,255,0.4), rgba(0,255,255,0.4));
+  background-size: cover; background-position: center;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 52px; font-weight: 900;
+}
+.other-name {
+  font-size: 26px; font-weight: 800;
+  margin-top: 12px; text-align: center;
+}
+.other-role-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 14px; border-radius: 20px;
+  background: rgba(255, 0, 255, 0.15);
+  border: 1px solid rgba(255, 0, 255, 0.5);
+  color: #FF00FF; font-size: 13px; font-weight: 700;
+  margin: 12px 0 24px;
+}
+
+.other-bio {
+  background: #14142B; border: 1px solid rgba(0, 255, 255, 0.3);
+  border-radius: 12px; padding: 14px; margin-bottom: 20px;
+}
+.other-bio-label { font-size: 11px; color: #B0B0C0; margin-bottom: 6px; }
+.other-bio-text { font-size: 14px; line-height: 1.5; }
+
+.other-info {
+  display: flex; align-items: center; gap: 12px;
+  background: #14142B; border: 1px solid rgba(0, 255, 255, 0.3);
+  border-radius: 12px; padding: 14px; margin-bottom: 10px;
+}
+.other-info-icon {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: rgba(0, 255, 255, 0.15);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+}
+.other-info-label { font-size: 11px; color: #B0B0C0; }
+.other-info-value { font-size: 15px; font-weight: 700; }
+
+/* ==================== СВОЙ ПРОФИЛЬ ==================== */
 .banner-wrapper {
   position: relative;
   height: 200px;
@@ -51,11 +115,9 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; }
   color: #fff;
 }
 .banner-wrapper:hover .banner-overlay { opacity: 1; }
-
 .banner-overlay-icon { font-size: 36px; margin-bottom: 8px; }
 .banner-overlay-text { font-size: 14px; font-weight: 700; }
 
-/* Аватар */
 .avatar-section {
   display: flex; justify-content: center;
   margin-top: -80px; margin-bottom: 20px;
@@ -91,26 +153,16 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; }
 }
 .avatar-wrapper:hover .avatar-overlay { opacity: 1; }
 
-/* Форма */
 .form-group { margin-bottom: 16px; }
 .form-label {
-  display: block;
-  font-size: 12px;
-  color: #B0B0C0;
-  margin-bottom: 6px;
-  font-weight: 600;
+  display: block; font-size: 12px; color: #B0B0C0;
+  margin-bottom: 6px; font-weight: 600;
 }
 .form-input, .form-textarea {
-  width: 100%;
-  padding: 14px 16px;
-  border-radius: 12px;
-  background: #14142B;
-  border: 1px solid rgba(0, 255, 255, 0.4);
-  color: #fff;
-  font-size: 15px;
-  outline: none;
-  font-family: inherit;
-  transition: all 0.2s;
+  width: 100%; padding: 14px 16px; border-radius: 12px;
+  background: #14142B; border: 1px solid rgba(0, 255, 255, 0.4);
+  color: #fff; font-size: 15px; outline: none;
+  font-family: inherit; transition: all 0.2s;
 }
 .form-input:focus, .form-textarea:focus {
   border-color: #00FFFF;
@@ -118,56 +170,33 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; }
 }
 .form-input::placeholder, .form-textarea::placeholder { color: #606060; }
 .form-textarea { min-height: 100px; resize: vertical; }
+.form-input:disabled { background: #0A0A1A; color: #606060; cursor: not-allowed; }
 
-.form-input:disabled {
-  background: #0A0A1A;
-  color: #606060;
-  cursor: not-allowed;
-}
-
-/* Кнопка сохранения */
 .save-btn {
-  width: 100%;
-  padding: 16px;
-  border: none;
-  border-radius: 14px;
+  width: 100%; padding: 16px; border: none; border-radius: 14px;
   background: linear-gradient(90deg, #FF00FF, #00FFFF);
-  color: #fff;
-  font-size: 16px;
-  font-weight: 700;
-  cursor: pointer;
+  color: #fff; font-size: 16px; font-weight: 700; cursor: pointer;
   box-shadow: 0 0 20px rgba(0, 255, 255, 0.4);
-  transition: all 0.2s;
-  margin-top: 20px;
+  transition: all 0.2s; margin-top: 20px;
 }
 .save-btn:hover { transform: translateY(-2px); box-shadow: 0 0 30px rgba(0, 255, 255, 0.6); }
 .save-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
-/* Уведомление */
 .toast {
-  position: fixed;
-  bottom: 30px;
-  left: 50%;
+  position: fixed; bottom: 30px; left: 50%;
   transform: translateX(-50%) translateY(100px);
-  padding: 14px 24px;
-  background: #00FFFF;
-  color: #0A0A1A;
-  font-weight: 700;
-  border-radius: 12px;
+  padding: 14px 24px; background: #00FFFF; color: #0A0A1A;
+  font-weight: 700; border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0, 255, 255, 0.5);
-  transition: transform 0.3s;
-  z-index: 1000;
+  transition: transform 0.3s; z-index: 1000;
 }
 .toast.show { transform: translateX(-50%) translateY(0); }
 .toast.error { background: #FF00FF; color: #fff; }
 
-/* Загрузка */
 .loading {
-  position: fixed; inset: 0;
-  background: rgba(0, 0, 0, 0.7);
+  position: fixed; inset: 0; background: rgba(0, 0, 0, 0.7);
   display: none; align-items: center; justify-content: center;
-  z-index: 999;
-  color: #00FFFF; font-size: 16px; font-weight: 700;
+  z-index: 999; color: #00FFFF; font-size: 16px; font-weight: 700;
 }
 .loading.show { display: flex; }
 
@@ -181,31 +210,22 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; }
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* Секция роли */
 .role-badge {
   display: inline-flex; align-items: center; gap: 6px;
   padding: 6px 14px;
   background: rgba(255, 0, 255, 0.15);
   border: 1px solid rgba(255, 0, 255, 0.5);
   border-radius: 20px;
-  font-size: 13px;
-  font-weight: 700;
-  color: #FF00FF;
+  font-size: 13px; font-weight: 700; color: #FF00FF;
   margin-bottom: 24px;
 }
 
-/* Выход */
 .logout-btn {
   width: 100%; padding: 16px;
-  background: transparent;
-  border: 1px solid #FF00FF;
-  color: #FF00FF;
-  border-radius: 14px;
-  font-size: 15px;
-  font-weight: 700;
-  cursor: pointer;
-  margin-top: 24px;
-  transition: all 0.2s;
+  background: transparent; border: 1px solid #FF00FF;
+  color: #FF00FF; border-radius: 14px;
+  font-size: 15px; font-weight: 700; cursor: pointer;
+  margin-top: 24px; transition: all 0.2s;
 }
 .logout-btn:hover { background: rgba(255, 0, 255, 0.15); }
 </style>
@@ -214,16 +234,63 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; }
 
 <!-- Шапка -->
 <div class="header">
-  <button class="back-btn" onclick="location.href='index.html'">←</button>
+  <button class="back-btn" onclick="history.back()">←</button>
   <div class="header-title">
-    <h1>Профиль</h1>
+    <h1 id="page-title">Профиль</h1>
   </div>
 </div>
 
-<!-- Контейнер -->
-<div class="container">
+<!-- ==================== ЧУЖОЙ ПРОФИЛЬ ==================== -->
+<div id="other-profile" style="display:none;">
+  <div class="other-banner" id="other-banner">
+    <div class="other-banner-gradient"></div>
+  </div>
 
-  <!-- Баннер -->
+  <div class="other-avatar-section">
+    <div class="other-avatar-outer">
+      <div class="other-avatar" id="other-avatar">?</div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="other-name" id="other-name">Загрузка...</div>
+    <div style="text-align:center;">
+      <div class="other-role-chip" id="other-role">🛡 —</div>
+    </div>
+
+    <div class="other-bio">
+      <div class="other-bio-label">О себе</div>
+      <div class="other-bio-text" id="other-bio">—</div>
+    </div>
+
+    <div class="other-info">
+      <div class="other-info-icon">👤</div>
+      <div>
+        <div class="other-info-label">Имя</div>
+        <div class="other-info-value" id="other-name-info">—</div>
+      </div>
+    </div>
+
+    <div class="other-info">
+      <div class="other-info-icon">🛡</div>
+      <div>
+        <div class="other-info-label">Роль</div>
+        <div class="other-info-value" id="other-role-info">—</div>
+      </div>
+    </div>
+
+    <div class="other-info">
+      <div class="other-info-icon">✉</div>
+      <div>
+        <div class="other-info-label">Email</div>
+        <div class="other-info-value" id="other-email-info">—</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== СВОЙ ПРОФИЛЬ ==================== -->
+<div class="container" id="my-profile">
   <div class="banner-wrapper" id="banner-wrapper" onclick="document.getElementById('banner-input').click()">
     <div class="banner-overlay">
       <div class="banner-overlay-icon">🖼</div>
@@ -231,7 +298,6 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; }
     </div>
   </div>
 
-  <!-- Аватар -->
   <div class="avatar-section">
     <div class="avatar-wrapper" onclick="document.getElementById('avatar-input').click()">
       <div class="avatar-img" id="avatar-img">?</div>
@@ -239,48 +305,37 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; }
     </div>
   </div>
 
-  <!-- Роль -->
   <div style="text-align: center;">
     <div class="role-badge" id="role-badge">🛡 Роль</div>
   </div>
 
-  <!-- Имя -->
   <div class="form-group">
     <label class="form-label">Имя</label>
     <input type="text" class="form-input" id="name-input" placeholder="Ваше имя">
   </div>
 
-  <!-- Email (только для чтения) -->
   <div class="form-group">
     <label class="form-label">Email</label>
     <input type="text" class="form-input" id="email-input" disabled>
   </div>
 
-  <!-- Описание -->
   <div class="form-group">
     <label class="form-label">О себе</label>
     <textarea class="form-textarea" id="description-input" placeholder="Например: Инженер, люблю футбол"></textarea>
   </div>
 
-  <!-- Кнопка сохранения -->
   <button class="save-btn" id="save-btn" onclick="saveProfile()">Сохранить</button>
-
-  <!-- Выход -->
   <button class="logout-btn" onclick="logout()">Выйти из аккаунта</button>
-
 </div>
 
-<!-- Скрытые input'ы -->
 <input type="file" id="avatar-input" accept="image/*" style="display:none;" onchange="onAvatarSelected(this)">
 <input type="file" id="banner-input" accept="image/*" style="display:none;" onchange="onBannerSelected(this)">
 
-<!-- Загрузка -->
 <div class="loading" id="loading">
   <div class="spinner"></div>
   <span id="loading-text">Загрузка...</span>
 </div>
 
-<!-- Уведомление -->
 <div class="toast" id="toast">Сохранено</div>
 
 <script>
@@ -299,23 +354,84 @@ const ROLE_TITLES = {
   LEAD_DEV_ZENIT: 'Ведущий разработчик Zenit'
 };
 
-// ========== СОСТОЯНИЕ ==========
 let currentUser = JSON.parse(localStorage.getItem('zenit-user') || 'null');
 if (!currentUser) location.href = 'index.html';
 
 let newAvatarFile = null;
 let newBannerFile = null;
 
-// ========== ЗАПОЛНЕНИЕ ФОРМЫ ==========
-document.getElementById('name-input').value = currentUser.name || '';
-document.getElementById('email-input').value = currentUser.email || '';
-document.getElementById('description-input').value = currentUser.description || '';
-document.getElementById('role-badge').innerHTML = '🛡 ' + (ROLE_TITLES[currentUser.role] || currentUser.role);
+// ========== ОПРЕДЕЛЯЕМ РЕЖИМ ==========
+const urlUser = new URLSearchParams(location.search).get('user');
 
-updateAvatar(currentUser.avatar_url, currentUser.name);
-updateBanner(currentUser.banner_url);
+if (urlUser) {
+  // ЧУЖОЙ ПРОФИЛЬ
+  document.getElementById('my-profile').style.display = 'none';
+  document.getElementById('other-profile').style.display = 'block';
+  document.getElementById('page-title').textContent = 'Профиль · ' + urlUser;
+  loadOtherProfile(urlUser);
+} else {
+  // СВОЙ ПРОФИЛЬ
+  document.getElementById('my-profile').style.display = 'block';
+  document.getElementById('other-profile').style.display = 'none';
+  document.getElementById('page-title').textContent = 'Мой профиль';
+  initMyProfile();
+}
 
-// ========== ОБНОВЛЕНИЕ АВАТАРА ==========
+// ==================== ЧУЖОЙ ПРОФИЛЬ ====================
+async function loadOtherProfile(name) {
+  try {
+    const { data, error } = await window.SB
+      .from('users')
+      .select('*')
+      .eq('name', name)
+      .limit(1);
+
+    if (error) throw error;
+
+    if (!data || data.length === 0) {
+      document.getElementById('other-name').textContent = 'Пользователь не найден';
+      return;
+    }
+
+    const u = data[0];
+
+    document.getElementById('other-name').textContent = u.name || 'Гость';
+    document.getElementById('other-role').textContent = '🛡 ' + (ROLE_TITLES[u.role] || u.role);
+    document.getElementById('other-bio').textContent = u.description || 'Пользователь пока не добавил описание';
+    document.getElementById('other-name-info').textContent = u.name || '—';
+    document.getElementById('other-role-info').textContent = ROLE_TITLES[u.role] || u.role;
+    document.getElementById('other-email-info').textContent = u.email || '—';
+
+    // Баннер
+    if (u.banner_url) {
+      document.getElementById('other-banner').style.backgroundImage = `url('${u.banner_url}')`;
+    }
+
+    // Аватар
+    const av = document.getElementById('other-avatar');
+    if (u.avatar_url) {
+      av.style.backgroundImage = `url('${u.avatar_url}')`;
+      av.textContent = '';
+    } else {
+      av.textContent = (u.name || '?').charAt(0).toUpperCase();
+    }
+  } catch (e) {
+    console.error(e);
+    document.getElementById('other-name').textContent = 'Ошибка загрузки';
+  }
+}
+
+// ==================== СВОЙ ПРОФИЛЬ ====================
+function initMyProfile() {
+  document.getElementById('name-input').value = currentUser.name || '';
+  document.getElementById('email-input').value = currentUser.email || '';
+  document.getElementById('description-input').value = currentUser.description || '';
+  document.getElementById('role-badge').innerHTML = '🛡 ' + (ROLE_TITLES[currentUser.role] || currentUser.role);
+
+  updateAvatar(currentUser.avatar_url, currentUser.name);
+  updateBanner(currentUser.banner_url);
+}
+
 function updateAvatar(url, name) {
   const el = document.getElementById('avatar-img');
   if (url) {
@@ -336,20 +452,17 @@ function updateBanner(url) {
   }
 }
 
-// ========== ВЫБОР ФАЙЛОВ ==========
 function onAvatarSelected(input) {
   const file = input.files[0];
   if (!file) return;
   newAvatarFile = file;
 
-  // Мгновенный превью
   const reader = new FileReader();
   reader.onload = (e) => {
     document.getElementById('avatar-img').style.backgroundImage = `url('${e.target.result}')`;
     document.getElementById('avatar-img').textContent = '';
   };
   reader.readAsDataURL(file);
-
   input.value = '';
 }
 
@@ -363,22 +476,17 @@ function onBannerSelected(input) {
     document.getElementById('banner-wrapper').style.backgroundImage = `url('${e.target.result}')`;
   };
   reader.readAsDataURL(file);
-
   input.value = '';
 }
 
-// ========== ЗАГРУЗКА ФАЙЛОВ В SUPABASE STORAGE ==========
 async function uploadFile(file, bucket) {
   const fileName = bucket + '_' + currentUser.email.replace(/[^a-z0-9]/gi, '_') + '_' + Date.now() + '.jpg';
-
   const { error } = await window.SB.storage.from(bucket).upload(fileName, file, { upsert: true });
   if (error) throw error;
-
   const { data } = window.SB.storage.from(bucket).getPublicUrl(fileName);
   return data.publicUrl;
 }
 
-// ========== СОХРАНЕНИЕ ==========
 async function saveProfile() {
   const name = document.getElementById('name-input').value.trim();
   const description = document.getElementById('description-input').value.trim();
@@ -392,19 +500,16 @@ async function saveProfile() {
     let avatarUrl = currentUser.avatar_url || '';
     let bannerUrl = currentUser.banner_url || '';
 
-    // Загрузка аватара
     if (newAvatarFile) {
       showLoading('Загрузка аватара...');
       avatarUrl = await uploadFile(newAvatarFile, 'avatars');
     }
 
-    // Загрузка баннера
     if (newBannerFile) {
       showLoading('Загрузка баннера...');
       bannerUrl = await uploadFile(newBannerFile, 'banners');
     }
 
-    // Обновление в БД
     showLoading('Сохранение...');
     const { error } = await window.SB.from('users').update({
       name: name,
@@ -415,7 +520,6 @@ async function saveProfile() {
 
     if (error) throw error;
 
-    // Обновление локального состояния
     currentUser.name = name;
     currentUser.description = description;
     currentUser.avatar_url = avatarUrl;
@@ -428,10 +532,8 @@ async function saveProfile() {
     hideLoading();
     showToast('✅ Профиль обновлён!');
 
-    // Обновляем превью (если загрузились новые URL)
     updateAvatar(avatarUrl, name);
     updateBanner(bannerUrl);
-
   } catch (e) {
     hideLoading();
     showToast('Ошибка: ' + e.message, true);
@@ -441,14 +543,12 @@ async function saveProfile() {
   }
 }
 
-// ========== ВЫХОД ==========
 function logout() {
   if (!confirm('Выйти из аккаунта?')) return;
   localStorage.removeItem('zenit-user');
   location.href = 'index.html';
 }
 
-// ========== УВЕДОМЛЕНИЯ ==========
 function showToast(text, isError = false) {
   const toast = document.getElementById('toast');
   toast.textContent = text;
@@ -457,7 +557,6 @@ function showToast(text, isError = false) {
   setTimeout(() => toast.classList.remove('show'), 3000);
 }
 
-// ========== ЗАГРУЗКА ==========
 function showLoading(text) {
   document.getElementById('loading-text').textContent = text;
   document.getElementById('loading').classList.add('show');

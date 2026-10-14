@@ -34,17 +34,70 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; }
 .top-actions { display: flex; gap: 8px; }
 .icon-btn { width: 44px; height: 44px; border-radius: 12px; background: #14142B; border: 1px solid rgba(0, 255, 255, 0.5); color: #fff; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 .icon-btn.pink { border-color: #FF00FF; }
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; }
-.card { background: #14142B; border: 1px solid rgba(0, 255, 255, 0.6); border-radius: 14px; padding: 16px; min-height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; text-align: center; transition: all 0.2s; }
-.card:hover { transform: translateY(-4px); box-shadow: 0 0 20px rgba(0, 255, 255, 0.4); }
-.card-icon { font-size: 40px; margin-bottom: 12px; }
-.card-title { font-size: 14px; font-weight: 700; }
+
+/* Сетка */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+/* Карточка с баннером */
+.card {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(0, 255, 255, 0.6);
+  background: #14142B;
+  cursor: pointer;
+  transition: all 0.25s;
+  aspect-ratio: 3 / 4;
+  display: flex;
+  flex-direction: column;
+}
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 0 25px rgba(0, 255, 255, 0.4);
+  border-color: #00FFFF;
+}
+
+.card-image {
+  flex: 1;
+  width: 100%;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+/* Затемнение снизу, чтобы текст читался */
+.card-image::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, transparent 50%, rgba(0, 0, 0, 0.7) 100%);
+}
+
+.card-title {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 12px;
+  background: rgba(20, 20, 43, 0.95);
+  border-top: 1px solid rgba(0, 255, 255, 0.3);
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+  color: #fff;
+  z-index: 2;
+}
 
 /* Светлая тема */
 body.light-theme { background: #F5F5FA; color: #1A1A2E; }
 body.light-theme .neon-input { background: #FFFFFF; border-color: #0088AA; color: #1A1A2E; }
 body.light-theme .neon-input::placeholder { color: #606060; }
-body.light-theme .card,
+body.light-theme .card { background: #FFFFFF; border-color: #0088AA; }
+body.light-theme .card-title { background: rgba(255, 255, 255, 0.95); color: #1A1A2E; }
 body.light-theme .icon-btn { background: #FFFFFF; border-color: #0088AA; color: #1A1A2E; }
 body.light-theme .user-role { color: #0088AA; }
 </style>
@@ -101,19 +154,19 @@ const ROLE_TITLES = {
   LEAD_DEV_ZENIT: 'Ведущий разработчик Zenit'
 };
 
-// ========== РАЗДЕЛЫ ==========
+// ========== РАЗДЕЛЫ (с картинками) ==========
 const SECTIONS = [
-  { name: 'База Документов', icon: '📄' },
-  { name: 'База Оборудования', icon: '⚙️' },
-  { name: 'База Человечков', icon: '👥' },
-  { name: 'База Контактов', icon: '📞' },
-  { name: 'База АУП', icon: '🏢' },
-  { name: 'База Алхимии', icon: '🧪' },
-  { name: 'Почта дня', icon: '📧' },
-  { name: 'База SAI Global', icon: '📊' },
-  { name: 'Общение', icon: '💬' },
-  { name: 'Псевдо диск L', icon: '💾' },
-  { name: 'База слэнга', icon: '📖' }
+  { name: 'База Документов', icon: '📄', banner: 'banner_docs.jpg' },
+  { name: 'База Оборудования', icon: '⚙️', banner: 'banner_equipment.jpg' },
+  { name: 'База Человечков', icon: '👥', banner: 'banner_people.jpg' },
+  { name: 'База Контактов', icon: '📞', banner: 'banner_contacts.jpg' },
+  { name: 'База АУП', icon: '🏢', banner: 'banner_aup.jpg' },
+  { name: 'База Алхимии', icon: '🧪', banner: 'banner_alchemy.jpg' },
+  { name: 'Почта дня', icon: '📧', banner: 'banner_mail.jpg' },
+  { name: 'База SAI Global', icon: '📊', banner: 'banner_sai.jpg' },
+  { name: 'Общение', icon: '💬', banner: 'banner_communication.jpg' },
+  { name: 'Псевдо диск L', icon: '💾', banner: 'banner_disk_l.jpg' },
+  { name: 'База слэнга', icon: '📖', banner: 'banner_slang.jpg' }
 ];
 
 // ========== СОСТОЯНИЕ ==========
@@ -168,7 +221,7 @@ async function handleLogin() {
   }
 }
 
-// ========== РЕГИСТРАЦИЯ — ОТКРЫТИЕ ОТДЕЛЬНОЙ СТРАНИЦЫ ==========
+// ========== РЕГИСТРАЦИЯ ==========
 function showRegister() {
   location.href = 'register.html';
 }
@@ -194,7 +247,7 @@ function showDashboard() {
 function renderCards(sections) {
   document.getElementById('cards-grid').innerHTML = sections.map(s => `
     <div class="card" onclick="openSection('${s.name}')">
-      <div class="card-icon">${s.icon}</div>
+      <div class="card-image" style="background-image: url('${s.banner}');"></div>
       <div class="card-title">${s.name}</div>
     </div>`).join('');
 }

@@ -69,7 +69,7 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; }
   position: relative;
 }
 
-/* Затемнение снизу, чтобы текст читался */
+/* Затемнение снизу */
 .card-image::after {
   content: '';
   position: absolute;
@@ -157,6 +157,7 @@ const ROLE_TITLES = {
 // ========== РАЗДЕЛЫ (с картинками) ==========
 const SECTIONS = [
   { name: 'База Документов', icon: '📄', banner: 'banner_docs.jpg' },
+  { name: 'База Продуктов', icon: '🍔', banner: 'banner_products.jpg' },
   { name: 'База Оборудования', icon: '⚙️', banner: 'banner_equipment.jpg' },
   { name: 'База Человечков', icon: '👥', banner: 'banner_people.jpg' },
   { name: 'База Контактов', icon: '📞', banner: 'banner_contacts.jpg' },
@@ -265,7 +266,7 @@ function openSection(name) {
   }
 
   const chatSections = [
-    'База Документов', 'База Оборудования', 'База Человечков',
+    'База Документов', 'База Продуктов', 'База Оборудования', 'База Человечков',
     'База АУП', 'База Алхимии', 'Почта дня'
   ];
 

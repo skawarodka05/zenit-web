@@ -31,6 +31,20 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; }
 /* Основной контейнер */
 .container { max-width: 700px; margin: 0 auto; padding: 16px; }
 
+/* Поиск */
+.search-bar { margin-bottom: 16px; }
+.search-input {
+  width: 100%; padding: 14px 18px; border-radius: 12px;
+  background: #14142B; border: 1px solid rgba(0, 255, 255, 0.4);
+  color: #fff; font-size: 14px; outline: none;
+  transition: all 0.2s;
+}
+.search-input:focus {
+  border-color: #00FFFF;
+  box-shadow: 0 0 12px rgba(0, 255, 255, 0.3);
+}
+.search-input::placeholder { color: #606060; }
+
 /* Поле ввода */
 .composer {
   background: #14142B; border: 1px solid rgba(0, 255, 255, 0.4);
@@ -169,6 +183,11 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; }
 <!-- Контейнер -->
 <div class="container">
 
+  <!-- Поиск -->
+  <div class="search-bar">
+    <input type="text" class="search-input" id="search-input" placeholder="🔍 Поиск по постам..." oninput="filterPosts()">
+  </div>
+
   <!-- Форма создания поста -->
   <div class="composer" id="composer" style="display:none;">
     <div class="composer-title">✏️ Создать пост</div>
@@ -207,6 +226,7 @@ let currentUser = JSON.parse(localStorage.getItem('zenit-user') || 'null');
 let dbName = new URLSearchParams(location.search).get('db') || 'База Документов';
 let selectedFile = null;
 let selectedImage = null;
+let allPosts = [];
 
 // ========== ПРОВЕРКА АВТОРИЗАЦИИ ==========
 if (!currentUser) {
@@ -231,24 +251,48 @@ async function loadPosts() {
 
     if (error) throw error;
 
-    if (!data || data.length === 0) {
-      container.innerHTML = `
-        <div class="empty">
-          <div class="empty-icon">📄</div>
-          <p>Пока нет постов в "${dbName}"</p>
-          <p style="font-size:12px; margin-top:8px;">Создайте первый пост ↑</p>
-        </div>`;
-      return;
-    }
-
-    container.innerHTML = '';
-    for (const post of data) {
-      const postEl = await renderPost(post);
-      container.appendChild(postEl);
-    }
+    allPosts = data || [];
+    renderPosts(allPosts);
   } catch (e) {
     container.innerHTML = '<div class="empty">Ошибка загрузки: ' + e.message + '</div>';
     console.error(e);
+  }
+}
+
+// ========== ПОИСК ==========
+function filterPosts() {
+  const q = document.getElementById('search-input').value.toLowerCase().trim();
+  if (!q) {
+    renderPosts(allPosts);
+    return;
+  }
+  const filtered = allPosts.filter(p =>
+    (p.title || '').toLowerCase().includes(q) ||
+    (p.content || '').toLowerCase().includes(q) ||
+    (p.author || '').toLowerCase().includes(q)
+  );
+  renderPosts(filtered);
+}
+
+// ========== ОТРИСОВКА ==========
+async function renderPosts(posts) {
+  const container = document.getElementById('posts-container');
+  const q = document.getElementById('search-input').value.trim();
+
+  if (!posts || posts.length === 0) {
+    container.innerHTML = `
+      <div class="empty">
+        <div class="empty-icon">${q ? '🔍' : '📄'}</div>
+        <p>${q ? 'Ничего не найдено по «' + escapeHtml(q) + '»' : 'Пока нет постов в "' + dbName + '"'}</p>
+        ${!q ? '<p style="font-size:12px; margin-top:8px;">Создайте первый пост ↑</p>' : ''}
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = '';
+  for (const post of posts) {
+    const postEl = await renderPost(post);
+    container.appendChild(postEl);
   }
 }
 
@@ -456,7 +500,7 @@ function viewImage(url) {
   document.getElementById('viewer').style.display = 'flex';
 }
 
-// ========== НАВИГАЦИЯ (ИСПРАВЛЕНО) ==========
+// ========== НАВИГАЦИЯ ==========
 function goBack() {
   history.back();
 }

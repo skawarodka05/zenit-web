@@ -91,9 +91,17 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; }
   display: flex; align-items: center; justify-content: center;
   font-weight: 900; font-size: 18px; flex-shrink: 0;
   background-size: cover; background-position: center;
+  overflow: hidden;
+  transition: transform 0.15s;
 }
-.post-author { flex: 1; }
-.post-author-name { font-size: 14px; font-weight: 700; }
+.post-avatar:hover { transform: scale(1.05); }
+.post-avatar img {
+  width: 100%; height: 100%; object-fit: cover;
+  border-radius: 50%;
+}
+.post-author { flex: 1; cursor: pointer; }
+.post-author:hover .post-author-name { color: #00FFFF; }
+.post-author-name { font-size: 14px; font-weight: 700; transition: color 0.15s; }
 .post-author-role { font-size: 11px; color: #00FFFF; }
 .post-delete {
   width: 32px; height: 32px; border-radius: 8px;
@@ -130,7 +138,19 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; }
   padding: 8px; background: #0A0A1A; border-radius: 8px;
   margin-bottom: 6px;
 }
-.comment-author { color: #FF00FF; font-size: 11px; font-weight: 700; }
+.comment-avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: linear-gradient(135deg, #FF00FF, #00FFFF);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 900; font-size: 13px; flex-shrink: 0;
+  background-size: cover; background-position: center;
+  overflow: hidden; cursor: pointer;
+}
+.comment-avatar img {
+  width: 100%; height: 100%; object-fit: cover; border-radius: 50%;
+}
+.comment-author { color: #FF00FF; font-size: 11px; font-weight: 700; cursor: pointer; }
+.comment-author:hover { color: #00FFFF; }
 .comment-text { color: #fff; font-size: 13px; margin-top: 2px; }
 .comment-delete {
   background: transparent; border: none; color: #606060;
@@ -230,7 +250,7 @@ let allPosts = [];
 
 // ========== ПРОВЕРКА АВТОРИЗАЦИИ ==========
 if (!currentUser) {
-  location.href = '/zenit-web/index.html';
+  location.href = 'index.html';
 }
 
 // ========== ЗАГОЛОВОК ==========
@@ -305,11 +325,17 @@ async function renderPost(post) {
   const canDelete = isMine;
 
   const initial = post.author ? post.author.charAt(0).toUpperCase() : '?';
+  const avatarUrl = post.author_avatar || '';
+  const avatarInner = avatarUrl
+    ? `<img src="${escapeAttr(avatarUrl)}" alt="">`
+    : initial;
+
+  const authorLink = `profile.html?user=${encodeURIComponent(post.author)}`;
 
   el.innerHTML = `
     <div class="post-header">
-      <div class="post-avatar">${initial}</div>
-      <div class="post-author">
+      <div class="post-avatar" onclick="location.href='${authorLink}'" title="${escapeAttr(post.author)}">${avatarInner}</div>
+      <div class="post-author" onclick="location.href='${authorLink}'">
         <div class="post-author-name">${escapeHtml(post.author)}</div>
         <div class="post-author-role">${escapeHtml(post.role || '')}</div>
       </div>
@@ -317,8 +343,8 @@ async function renderPost(post) {
     </div>
     <div class="post-title">${escapeHtml(post.title)}</div>
     <div class="post-content">${escapeHtml(post.content)}</div>
-    ${post.image_url ? `<img class="post-image" src="${post.image_url}" onclick="viewImage('${post.image_url}')">` : ''}
-    ${post.file_url ? `<a class="post-file" href="${post.file_url}" target="_blank">📎 Скачать вложение</a>` : ''}
+    ${post.image_url ? `<img class="post-image" src="${post.image_url}" onclick="viewImage('${escapeAttr(post.image_url)}')">` : ''}
+    ${post.file_url ? `<a class="post-file" href="${escapeAttr(post.file_url)}" target="_blank">📎 Скачать вложение</a>` : ''}
     <div class="comments-toggle" onclick="toggleComments(${post.id})">
       💬 Обсуждение <span id="comments-count-${post.id}"></span>
     </div>
@@ -385,6 +411,7 @@ async function submitPost() {
       content: content,
       author: currentUser.name,
       role: currentUser.role,
+      author_avatar: currentUser.avatar_url || '',
       has_file: !!fileUrl,
       has_image: !!imageUrl,
       file_url: fileUrl,
@@ -450,22 +477,35 @@ async function loadComments(postId) {
     .eq('post_id', postId)
     .order('id', { ascending: true });
 
-  if (error) { container.innerHTML = '<div style="color:#FF00FF; font-size:12px;">Ошибка: ' + error.message + '</div>'; return; }
+  if (error) {
+    container.innerHTML = '<div style="color:#FF00FF; font-size:12px;">Ошибка: ' + error.message + '</div>';
+    return;
+  }
 
   if (!data || data.length === 0) {
     container.innerHTML = '<div style="color:#606060; font-size:12px; padding:6px;">Нет комментариев</div>';
     return;
   }
 
-  container.innerHTML = data.map(c => `
-    <div class="comment">
-      <div style="flex:1;">
-        <div class="comment-author">${escapeHtml(c.author)}</div>
-        <div class="comment-text">${escapeHtml(c.text)}</div>
+  container.innerHTML = data.map(c => {
+    const initial = c.author ? c.author.charAt(0).toUpperCase() : '?';
+    const avatarUrl = c.author_avatar || '';
+    const avatarInner = avatarUrl
+      ? `<img src="${escapeAttr(avatarUrl)}" alt="">`
+      : initial;
+    const authorLink = `profile.html?user=${encodeURIComponent(c.author)}`;
+
+    return `
+      <div class="comment">
+        <div class="comment-avatar" onclick="location.href='${authorLink}'">${avatarInner}</div>
+        <div style="flex:1; margin-left:8px;">
+          <div class="comment-author" onclick="location.href='${authorLink}'">${escapeHtml(c.author)}</div>
+          <div class="comment-text">${escapeHtml(c.text)}</div>
+        </div>
+        <button class="comment-delete" onclick="deleteComment(${c.id}, ${postId})">🗑</button>
       </div>
-      <button class="comment-delete" onclick="deleteComment(${c.id}, ${postId})">🗑</button>
-    </div>
-  `).join('');
+    `;
+  }).join('');
 }
 
 async function addComment(postId) {
@@ -477,6 +517,7 @@ async function addComment(postId) {
     post_id: postId,
     author: currentUser.name,
     role: currentUser.role,
+    author_avatar: currentUser.avatar_url || '',
     text: text,
   });
 
@@ -511,6 +552,11 @@ function escapeHtml(text) {
   return String(text).replace(/[&<>"']/g, c => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
   }[c]));
+}
+
+function escapeAttr(text) {
+  if (!text) return '';
+  return String(text).replace(/'/g, "\\'").replace(/"/g, '&quot;');
 }
 
 // ========== СТАРТ ==========

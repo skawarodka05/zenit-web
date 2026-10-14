@@ -9,7 +9,6 @@
 html, body { height: 100%; overflow: hidden; }
 body { background: #0A0A1A; color: #fff; display: flex; flex-direction: column; }
 
-/* Шапка */
 .header {
   display: flex; align-items: center; gap: 12px;
   padding: 16px; background: #14142B;
@@ -27,7 +26,6 @@ body { background: #0A0A1A; color: #fff; display: flex; flex-direction: column; 
 .header-title h1 { font-size: 18px; font-weight: 700; }
 .header-title p { font-size: 12px; color: #00FFFF; margin-top: 2px; }
 
-/* Поиск */
 .search-bar {
   padding: 8px 16px; background: #14142B;
   border-bottom: 1px solid rgba(0, 255, 255, 0.2);
@@ -40,7 +38,6 @@ body { background: #0A0A1A; color: #fff; display: flex; flex-direction: column; 
 }
 .search-bar input:focus { border-color: #00FFFF; }
 
-/* Список сообщений (скролл) */
 #messages {
   flex: 1; overflow-y: auto;
   padding: 16px;
@@ -49,14 +46,31 @@ body { background: #0A0A1A; color: #fff; display: flex; flex-direction: column; 
 #messages::-webkit-scrollbar { width: 6px; }
 #messages::-webkit-scrollbar-thumb { background: #00FFFF; border-radius: 3px; }
 
-/* Пузырь сообщения */
+/* Строка пузыря */
 .bubble-row {
-  display: flex; width: 100%;
+  display: flex; width: 100%; align-items: flex-end; gap: 8px;
 }
 .bubble-row.mine { justify-content: flex-end; }
 .bubble-row.other { justify-content: flex-start; }
+
+/* Аватарка */
+.bubble-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: linear-gradient(135deg, #FF00FF, #00FFFF);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 900; font-size: 15px; flex-shrink: 0;
+  background-size: cover; background-position: center;
+  overflow: hidden; cursor: pointer;
+  transition: transform 0.15s;
+  border: 1px solid rgba(0, 255, 255, 0.4);
+}
+.bubble-avatar:hover { transform: scale(1.08); }
+.bubble-avatar img {
+  width: 100%; height: 100%; object-fit: cover; border-radius: 50%;
+}
+
 .bubble {
-  max-width: 75%; padding: 10px 14px; border-radius: 16px;
+  max-width: 70%; padding: 10px 14px; border-radius: 16px;
   word-wrap: break-word;
 }
 .bubble.mine {
@@ -71,9 +85,11 @@ body { background: #0A0A1A; color: #fff; display: flex; flex-direction: column; 
 }
 .bubble-author {
   font-size: 11px; font-weight: 700; margin-bottom: 4px;
+  cursor: pointer;
 }
 .bubble.mine .bubble-author { color: #00FFFF; text-align: right; }
 .bubble.other .bubble-author { color: #FF00FF; }
+.bubble-author:hover { text-decoration: underline; }
 .bubble-text { font-size: 14px; line-height: 1.4; }
 .bubble-image {
   max-width: 100%; border-radius: 10px; margin-top: 6px;
@@ -94,13 +110,11 @@ body { background: #0A0A1A; color: #fff; display: flex; flex-direction: column; 
 .bubble.mine .bubble-delete { color: rgba(255, 255, 255, 0.5); }
 .bubble.mine .bubble-delete:hover { color: #FF00FF; }
 
-/* Пустой экран */
 .empty {
   text-align: center; padding: 40px 20px; color: #606060;
   margin: auto;
 }
 
-/* Поле ввода (прилипло снизу) */
 .composer {
   display: flex; align-items: flex-end; gap: 8px;
   padding: 10px 12px 14px;
@@ -137,7 +151,6 @@ body { background: #0A0A1A; color: #fff; display: flex; flex-direction: column; 
 }
 .composer-send:disabled { opacity: 0.5; cursor: not-allowed; }
 
-/* Превью вложений */
 .attachments {
   display: flex; gap: 8px; padding: 0 12px 8px;
   flex-wrap: wrap;
@@ -154,7 +167,6 @@ body { background: #0A0A1A; color: #fff; display: flex; flex-direction: column; 
   margin-left: 4px;
 }
 
-/* Просмотр картинки */
 #viewer {
   position: fixed; inset: 0; background: rgba(0, 0, 0, 0.95);
   display: none; align-items: center; justify-content: center; z-index: 1000;
@@ -170,7 +182,6 @@ body { background: #0A0A1A; color: #fff; display: flex; flex-direction: column; 
 </head>
 <body>
 
-<!-- Шапка -->
 <div class="header">
   <button class="back-btn" onclick="location.href='index.html'">←</button>
   <div class="header-title">
@@ -179,20 +190,16 @@ body { background: #0A0A1A; color: #fff; display: flex; flex-direction: column; 
   </div>
 </div>
 
-<!-- Поиск -->
 <div class="search-bar">
   <input type="text" id="search-input" placeholder="🔍 Поиск..." oninput="filterMessages()">
 </div>
 
-<!-- Сообщения -->
 <div id="messages">
   <div class="empty">Загрузка...</div>
 </div>
 
-<!-- Превью вложений -->
 <div class="attachments" id="attachments" style="display:none;"></div>
 
-<!-- Поле ввода -->
 <div class="composer">
   <button class="composer-btn" id="file-btn" onclick="document.getElementById('file-input').click()" title="Файл">📎</button>
   <button class="composer-btn" id="image-btn" onclick="document.getElementById('image-input').click()" title="Фото">🖼</button>
@@ -202,7 +209,6 @@ body { background: #0A0A1A; color: #fff; display: flex; flex-direction: column; 
   <input type="file" id="image-input" accept="image/*" style="display:none;" onchange="onFileSelected(this, 'image')">
 </div>
 
-<!-- Просмотр картинки -->
 <div id="viewer" onclick="this.style.display='none'">
   <button class="close" onclick="document.getElementById('viewer').style.display='none'">×</button>
   <img id="viewer-img" src="">
@@ -211,14 +217,11 @@ body { background: #0A0A1A; color: #fff; display: flex; flex-direction: column; 
 <script>
 // ========== КОНФИГ ==========
 const SB_URL = 'https://owkizfikhtiqbwftqgfd.supabase.co';
-const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93a2l6ZmlraHRpcWJ3ZnRxZ2ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE0OTYxMDYsImV4cCI6MjEwNzA3MjEwNn0.EHVyXiBYuSJrDVd_k5zAbwqT3ZPFF43p5Uh4_huKoOo';
-
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93a2l6ZmlraHRpcWJ3ZnRxZ2ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE0OTYxMDYsImV4cCI6MjEwNzEwNzA3MjEwNn0.EHVyXiBYuSJrDVd_k5zAbwqT3ZPFF43p5Uh4_huKoOo';
 window.SB = window.supabase.createClient(SB_URL, SB_KEY);
-console.log('✅ SB клиент готов');
 
 const DB_NAME = 'Общение';
 
-// ========== СОСТОЯНИЕ ==========
 let currentUser = JSON.parse(localStorage.getItem('zenit-user') || 'null');
 let allMessages = [];
 let selectedFile = null;
@@ -258,21 +261,34 @@ function renderMessages(msgs) {
   container.innerHTML = msgs.map(m => {
     const isMine = m.author === currentUser.name;
     const initial = m.author ? m.author.charAt(0).toUpperCase() : '?';
+    const avatarUrl = m.author_avatar || '';
+    const avatarInner = avatarUrl
+      ? `<img src="${escapeAttr(avatarUrl)}" alt="">`
+      : initial;
+    const authorLink = `profile.html?user=${encodeURIComponent(m.author)}`;
+
+    // Аватарка: у своих — справа, у чужих — слева
+    const avatarHtml = `
+      <div class="bubble-avatar" onclick="location.href='${authorLink}'" title="${escapeAttr(m.author)}">
+        ${avatarInner}
+      </div>
+    `;
 
     return `
       <div class="bubble-row ${isMine ? 'mine' : 'other'}">
+        ${!isMine ? avatarHtml : ''}
         <div class="bubble ${isMine ? 'mine' : 'other'}">
-          <div class="bubble-author">${isMine ? 'Вы' : escapeHtml(m.author)}</div>
+          <div class="bubble-author" onclick="location.href='${authorLink}'">${isMine ? 'Вы' : escapeHtml(m.author)}</div>
           <div class="bubble-text">${escapeHtml(m.content)}</div>
           ${m.image_url ? `<img class="bubble-image" src="${m.image_url}" onclick="viewImage('${m.image_url}')">` : ''}
           ${m.file_url ? `<a class="bubble-file" href="${m.file_url}" target="_blank">📎 Файл</a>` : ''}
           ${isMine ? `<button class="bubble-delete" onclick="deleteMessage(${m.id})">Удалить</button>` : ''}
         </div>
+        ${isMine ? avatarHtml : ''}
       </div>
     `;
   }).join('');
 
-  // Автопрокрутка вниз
   container.scrollTop = container.scrollHeight;
 }
 
@@ -364,6 +380,7 @@ async function sendMessage() {
       content: content || '📎 Вложение',
       author: currentUser.name,
       role: currentUser.role,
+      author_avatar: currentUser.avatar_url || '',
       has_file: !!fileUrl,
       has_image: !!imageUrl,
       file_url: fileUrl,
@@ -411,6 +428,11 @@ function escapeHtml(text) {
   }[c]));
 }
 
+function escapeAttr(text) {
+  if (!text) return '';
+  return String(text).replace(/"/g, '&quot;').replace(/'/g, "\\'");
+}
+
 // ========== ОБРАБОТЧИКИ ==========
 const msgInput = document.getElementById('msg-input');
 msgInput.addEventListener('keydown', (e) => {
@@ -426,8 +448,6 @@ msgInput.addEventListener('input', () => {
 
 // ========== СТАРТ ==========
 loadMessages();
-
-// Автообновление каждые 5 сек
 setInterval(() => {
   if (!document.getElementById('search-input').value) loadMessages();
 }, 5000);

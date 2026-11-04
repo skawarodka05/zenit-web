@@ -2,6 +2,11 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
+<!-- 🛑 ЗАПРЕТ КЭШИРОВАНИЯ -->
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<!-- ------------------- -->
 <title>ZENIT · Вход</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -78,7 +83,6 @@ async function doLogin() {
   err.style.display = 'none';
 
   try {
-    // Ищем пользователя в базе
     const { data, error } = await window.SB
       .from('users')
       .select('*')
@@ -88,11 +92,13 @@ async function doLogin() {
 
     if (error || !data) throw new Error('Неверный логин или пароль');
 
-    // Сохраняем в браузер
+    // Сохраняем данные
     localStorage.setItem('zenit-user', JSON.stringify(data));
     
-    // Перекидываем на главную
-    location.href = 'index.html';
+    // 🛑 Задержка 100мс, чтобы браузер 100% успел сохранить данные в память
+    setTimeout(() => {
+        location.href = 'index.html';
+    }, 100);
 
   } catch (e) {
     err.textContent = e.message;

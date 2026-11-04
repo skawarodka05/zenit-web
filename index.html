@@ -6,7 +6,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-body { background: #0A0A1A; color: #fff; min-height: 100vh; padding-bottom: 40px; }
+body { background: #0A0A1A; color: #fff; min-height: 100vh; }
 
 .header { display: flex; align-items: center; gap: 12px; padding: 16px; background: #14142B; border-bottom: 1px solid rgba(0, 255, 255, 0.3); position: sticky; top: 0; z-index: 100; }
 .logo-wrap { display: flex; align-items: center; gap: 12px; cursor: pointer; flex: 1; text-decoration: none; color: inherit; }
@@ -16,27 +16,23 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; padding-bottom: 40px
 .header-btn { width: 44px; height: 44px; border-radius: 12px; background: #0A0A1A; border: 1px solid rgba(0, 255, 255, 0.5); color: #00FFFF; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; text-decoration: none; transition: all 0.2s; }
 .header-btn:hover { background: rgba(0, 255, 255, 0.15); }
 .header-btn.pink { border-color: rgba(255, 0, 255, 0.5); color: #FF00FF; }
-.header-btn.pink:hover { background: rgba(255, 0, 255, 0.15); }
 
 .container { max-width: 900px; margin: 0 auto; padding: 16px; }
-.user-card { background: #14142B; border: 1px solid rgba(255, 0, 255, 0.5); border-radius: 12px; padding: 14px 16px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: all 0.2s; text-decoration: none; color: #fff; }
-.user-card:hover { background: rgba(255, 0, 255, 0.05); }
+.user-card { background: #14142B; border: 1px solid rgba(255, 0, 255, 0.5); border-radius: 12px; padding: 14px 16px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; text-decoration: none; color: #fff; }
 .user-name { font-size: 16px; font-weight: 700; }
 .user-profile-link { font-size: 13px; color: #00FFFF; }
 
 .search-bar { margin-bottom: 24px; }
-.search-input { width: 100%; padding: 14px 18px; border-radius: 12px; background: #14142B; border: 1px solid rgba(0, 255, 255, 0.5); color: #fff; font-size: 15px; outline: none; transition: all 0.2s; }
-.search-input:focus { border-color: #00FFFF; box-shadow: 0 0 12px rgba(0, 255, 255, 0.3); }
-.search-input::placeholder { color: #606060; }
+.search-input { width: 100%; padding: 14px 18px; border-radius: 12px; background: #14142B; border: 1px solid rgba(0, 255, 255, 0.5); color: #fff; font-size: 15px; outline: none; }
 
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; }
-.db-card { background: #14142B; border: 1px solid rgba(0, 255, 255, 0.5); border-radius: 14px; overflow: hidden; cursor: pointer; display: flex; flex-direction: column; text-decoration: none; color: #fff; transition: all 0.2s; }
-.db-card:hover { border-color: #00FFFF; box-shadow: 0 0 15px rgba(0, 255, 255, 0.2); transform: translateY(-2px); }
+.db-card { background: #14142B; border: 1px solid rgba(0, 255, 255, 0.5); border-radius: 14px; overflow: hidden; text-decoration: none; color: #fff; display: flex; flex-direction: column; transition: all 0.2s; }
+.db-card:hover { border-color: #00FFFF; box-shadow: 0 0 15px rgba(0, 255, 255, 0.2); }
 
-.db-image { width: 100%; height: 140px; border-bottom: 1px solid rgba(0, 255, 255, 0.3); position: relative; overflow: hidden; background: #0A0A1A; }
+.db-image { width: 100%; height: 140px; border-bottom: 1px solid rgba(0, 255, 255, 0.3); position: relative; background: #0A0A1A; }
 .db-image img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.db-image-placeholder { width: 100%; height: 100%; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 48px; background: linear-gradient(135deg, rgba(255,0,255,0.4), rgba(0,255,255,0.4)); }
-.db-title { padding: 12px; font-size: 14px; font-weight: 700; text-align: center; background: #14142B; display: flex; align-items: center; justify-content: center; min-height: 50px; }
+.db-image-placeholder { width: 100%; height: 100%; position: absolute; top: 0; left: 0; display: flex; align-items: center; justify-content: center; font-size: 48px; background: linear-gradient(135deg, rgba(255,0,255,0.4), rgba(0,255,255,0.4)); }
+.db-title { padding: 12px; font-size: 14px; font-weight: 700; text-align: center; }
 .empty { text-align: center; padding: 60px 20px; color: #606060; grid-column: 1 / -1; }
 </style>
 </head>
@@ -51,7 +47,6 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; padding-bottom: 40px
     </div>
   </a>
   <a href="tasks.html" class="header-btn" title="Мой Чек-лист">✅</a>
-  <!-- Кнопка выхода ведет на страницу авторизации -->
   <button class="header-btn pink" onclick="logout()" title="Выйти">🚪</button>
 </div>
 
@@ -69,28 +64,13 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; padding-bottom: 40px
 </div>
 
 <script>
-const SB_URL = 'https://owkizfikhtiqbwftqgfd.supabase.co';
-const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93a2l6ZmlraHRpcWJ3ZnRxZ2ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE0OTYxMDYsImV4cCI6MjEwNzA3MjEwNn0.EHVyXiBYuSJrDVd_k5zAbwqT3ZPFF43p5Uh4_huKoOo';
-// Инициализируем Supabase с защитой от блокировки CDN
-let SB = null;
-try { SB = window.supabase.createClient(SB_URL, SB_KEY); } catch(e) { console.error("Ошибка загрузки Supabase"); }
-
+// Конфигурация
 const ROLE_TITLES = {
   MANAGER: 'Менеджер', DEPUTY_DIRECTOR: 'Заместитель директора', DIRECTOR: 'Директор',
   TU: 'ТУ', OD: 'ОД', ID: 'ИД', MODERATOR_ZENIT: 'Модератор Zenit', LEAD_DEV_ZENIT: 'Ведущий разработчик Zenit'
 };
 
-// 🛡 БЕЗОПАСНОЕ ЧТЕНИЕ ПРОФИЛЯ (чтобы страница не зависала при ошибке)
-let currentUser = null;
-try {
-    const raw = localStorage.getItem('zenit-user');
-    if (raw) currentUser = JSON.parse(raw);
-} catch (e) {
-    console.error("Битые данные в кэше. Очищаем...");
-    localStorage.removeItem('zenit-user');
-}
-
-// Список карточек
+// Данные карточек
 const DB_ITEMS = [
   { name: 'Мой Чек-лист', image: 'https://raw.githubusercontent.com/skawarodka05/zenit-web/main/banner_tasks.jpg', link: 'tasks.html', emoji: '✅' },
   { name: 'База Документов', image: 'banner_docs.jpg', link: 'chat.html?db=База Документов', emoji: '📄' },
@@ -107,64 +87,67 @@ const DB_ITEMS = [
   { name: 'База слэнга', image: 'banner_slang.jpg', link: 'slang.html', emoji: '📚' }
 ];
 
-let filteredItems = [...DB_ITEMS];
+// 1. Пытаемся взять юзера (если ошибка - просто игнорим)
+let user = null;
+try { user = JSON.parse(localStorage.getItem('zenit-user')); } catch(e) {}
 
-function init() {
-  // Заполняем шапку
-  if (currentUser) {
-    document.getElementById('user-name').textContent = currentUser.name || 'Гость';
-    document.getElementById('header-role').textContent = ROLE_TITLES[currentUser.role] || currentUser.role || '';
-  } else {
-    document.getElementById('user-name').textContent = 'Гость';
-    document.getElementById('header-role').textContent = 'Нажмите для входа';
-  }
-  // Рисуем карточки
-  renderGrid();
+// 2. Заполняем шапку
+if (user) {
+  document.getElementById('user-name').textContent = user.name || 'Гость';
+  document.getElementById('header-role').textContent = ROLE_TITLES[user.role] || user.role || '';
 }
 
-function renderGrid() {
+// 3. Рисуем сетку
+function renderGrid(items) {
   const grid = document.getElementById('grid');
-  if (!grid) return; // Защита, если элемента нет
-
-  if (filteredItems.length === 0) {
+  if (items.length === 0) {
     grid.innerHTML = '<div class="empty">Ничего не найдено</div>';
     return;
   }
-
-  grid.innerHTML = filteredItems.map(item => {
-    // Если картинка не загрузится, включится onerror и покажется эмодзи
-    const imgHtml = item.image 
-      ? `<div class="db-image">
-           <img src="${item.image}" alt="${item.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-           <div class="db-image-placeholder" style="display:none;">${item.emoji}</div>
-         </div>`
-      : `<div class="db-image"><div class="db-image-placeholder">${item.emoji}</div></div>`;
-
-    return `
+  
+  let html = '';
+  items.forEach(item => {
+    let imgHtml = '';
+    if (item.image) {
+      imgHtml = `
+        <div class="db-image">
+          <img src="${item.image}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+          <div class="db-image-placeholder" style="display:none;">${item.emoji}</div>
+        </div>`;
+    } else {
+      imgHtml = `<div class="db-image"><div class="db-image-placeholder">${item.emoji}</div></div>`;
+    }
+    
+    html += `
       <a href="${item.link}" class="db-card">
         ${imgHtml}
         <div class="db-title">${item.name}</div>
-      </a>
-    `;
-  }).join('');
+      </a>`;
+  });
+  
+  grid.innerHTML = html;
 }
 
+// 4. Поиск
 function filterItems() {
-  const searchInput = document.getElementById('search-input');
-  if (!searchInput) return;
-  const q = searchInput.value.toLowerCase().trim();
-  filteredItems = q ? DB_ITEMS.filter(item => item.name.toLowerCase().includes(q)) : [...DB_ITEMS];
-  renderGrid();
+  const q = document.getElementById('search-input').value.toLowerCase().trim();
+  if (!q) {
+    renderGrid(DB_ITEMS);
+  } else {
+    const filtered = DB_ITEMS.filter(i => i.name.toLowerCase().includes(q));
+    renderGrid(filtered);
+  }
 }
 
+// 5. Выход
 function logout() {
   if (!confirm('Выйти из аккаунта?')) return;
   localStorage.removeItem('zenit-user');
-  location.href = 'register.html'; // Укажи тут название своей страницы входа (например, login.html)
+  location.href = 'register.html'; 
 }
 
-// Запускаем всё, когда страница прогрузится
-document.addEventListener('DOMContentLoaded', init);
+// 6. Запуск
+renderGrid(DB_ITEMS);
 </script>
 </body>
 </html>

@@ -52,7 +52,6 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; }
 .post-file { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; background: #0A0A1A; border: 1px solid rgba(0, 255, 255, 0.4); border-radius: 10px; color: #00FFFF; font-size: 13px; text-decoration: none; margin-bottom: 10px; }
 .post-file:hover { background: rgba(0, 255, 255, 0.1); }
 
-/* РЕАКЦИИ */
 .reactions-row { display: flex; gap: 6px; margin-top: 4px; margin-bottom: 10px; flex-wrap: wrap; }
 .reaction-btn { display: flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 20px; background: #0A0A1A; border: 1px solid rgba(176, 176, 192, 0.3); color: #B0B0C0; font-size: 13px; cursor: pointer; transition: all 0.2s; user-select: none; }
 .reaction-btn:hover { background: rgba(0, 255, 255, 0.1); }
@@ -191,7 +190,7 @@ async function renderPost(post) {
     ${post.image_url ? `<img class="post-image" src="${post.image_url}" onclick="viewImage('${escapeAttr(post.image_url)}')">` : ''}
     ${post.file_url ? `<a class="post-file" href="${escapeAttr(post.file_url)}" target="_blank">📎 Скачать вложение</a>` : ''}
     
-    <div id="reactions-${post.id}"></div> <!-- Реакции -->
+    <div id="reactions-${post.id}"></div>
     
     <div class="comments-toggle" onclick="toggleComments(${post.id})">💬 Обсуждение <span id="comments-count-${post.id}"></span></div>
     <div class="comments-list hidden" id="comments-${post.id}">
@@ -203,7 +202,6 @@ async function renderPost(post) {
     </div>
   `;
 
-  // Подгружаем реакции
   setTimeout(async () => {
     const rHtml = await renderReactionsHtml(post.id);
     const rCont = document.getElementById(`reactions-${post.id}`);
@@ -214,26 +212,40 @@ async function renderPost(post) {
   return el;
 }
 
-// ========== РЕАКЦИИ ==========
+// ========== РЕАКЦИИ (С ОБРАБОТКОЙ ОШИБОК) ==========
 async function loadReactions(postId) {
-  const { data } = await window.SB.from('reactions').select('*').eq('post_id', postId);
+  const { data, error } = await window.SB.from('reactions').select('*').eq('post_id', postId);
+  if (error) { console.error(error); return []; }
   return data || [];
 }
 
 async function toggleReaction(postId, emoji, event) {
   if(event) event.stopPropagation();
   const userName = currentUser.name;
-  const { data: existing } = await window.SB.from('reactions').select('*').eq('post_id', postId).eq('user_name', userName).eq('emoji', emoji);
-
-  if (existing && existing.length > 0) {
-    await window.SB.from('reactions').delete().eq('post_id', postId).eq('user_name', userName).eq('emoji', emoji);
-  } else {
-    await window.SB.from('reactions').insert({ post_id: postId, user_name: userName, emoji: emoji });
-  }
   
-  const newHtml = await renderReactionsHtml(postId);
-  const container = document.getElementById(`reactions-${postId}`);
-  if (container) container.innerHTML = newHtml;
+  try {
+    const { data: existing, error: selectError } = await window.SB.from('reactions')
+      .select('*').eq('post_id', postId).eq('user_name', userName).eq('emoji', emoji);
+
+    if (selectError) throw selectError;
+
+    if (existing && existing.length > 0) {
+      const { error: delError } = await window.SB.from('reactions')
+        .delete().eq('post_id', postId).eq('user_name', userName).eq('emoji', emoji);
+      if (delError) throw delError;
+    } else {
+      const { error: insError } = await window.SB.from('reactions')
+        .insert({ post_id: postId, user_name: userName, emoji: emoji });
+      if (insError) throw insError;
+    }
+    
+    const newHtml = await renderReactionsHtml(postId);
+    const container = document.getElementById(`reactions-${postId}`);
+    if (container) container.innerHTML = newHtml;
+  } catch (error) {
+    console.error("Ошибка реакции:", error);
+    alert("Не удалось поставить реакцию:\n" + error.message);
+  }
 }
 
 async function renderReactionsHtml(postId) {
@@ -253,7 +265,7 @@ async function renderReactionsHtml(postId) {
   return html;
 }
 
-// ========== СОЗДАНИЕ ПОСТА ==========
+// ========== ОСТАЛЬНОЕ ==========
 document.getElementById('composer').style.display = 'block';
 
 function onFileSelected(input, type) {
@@ -305,7 +317,6 @@ async function deletePost(postId) {
   loadPosts();
 }
 
-// ========== КОММЕНТАРИИ ==========
 async function loadCommentsCount(postId) {
   const { count } = await window.SB.from('comments').select('*', { count: 'exact', head: true }).eq('post_id', postId);
   const el = document.getElementById('comments-count-' + postId);

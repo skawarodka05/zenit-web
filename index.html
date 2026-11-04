@@ -80,7 +80,8 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; padding-bottom: 40px
 .db-image-placeholder {
   width: 100%; height: 100%;
   display: flex; align-items: center; justify-content: center;
-  font-size: 48px; background: linear-gradient(135deg, rgba(255,0,255,0.2), rgba(0,255,255,0.2));
+  font-size: 48px; 
+  background: linear-gradient(135deg, rgba(255,0,255,0.4), rgba(0,255,255,0.4));
 }
 
 .db-title {
@@ -105,10 +106,7 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; padding-bottom: 40px
     </div>
   </a>
 
-  <!-- Кнопка Задачника в шапке (опционально) -->
   <a href="tasks.html" class="header-btn" title="Мой Чек-лист">✅</a>
-
-  <!-- Кнопка Выхода -->
   <button class="header-btn pink" onclick="logout()" title="Выйти">🚪</button>
 </div>
 
@@ -126,9 +124,7 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; padding-bottom: 40px
   </div>
 
   <!-- Сетка карточек -->
-  <div class="grid" id="grid">
-    <!-- Карточки будут сгенерированы через JS -->
-  </div>
+  <div class="grid" id="grid"></div>
 
 </div>
 
@@ -149,12 +145,12 @@ const ROLE_TITLES = {
 
 // ========== СОСТОЯНИЕ ==========
 let currentUser = JSON.parse(localStorage.getItem('zenit-user') || 'null');
-if (!currentUser) { location.href = 'index.html'; } // На случай если вообще нет входа
+if (!currentUser) { location.href = 'index.html'; }
 
 // ========== ДАННЫЕ (СПИСОК КАРТОЧЕК) ==========
-// image: имя файла картинки в репозитории. Если картинки нет - будет заглушка.
-// link: куда ведет клик.
+// Я поставил "Мой Чек-лист" ПЕРВЫМ в списке!
 const DB_ITEMS = [
+  { name: 'Мой Чек-лист', image: '', link: 'tasks.html', emoji: '✅' }, // ← ТУТ
   { name: 'База Документов', image: 'banner_docs.jpg', link: 'chat.html?db=База Документов', emoji: '📄' },
   { name: 'База Продуктов', image: 'banner_products.jpg', link: 'chat.html?db=База Продуктов', emoji: '🛒' },
   { name: 'База Оборудования', image: 'banner_equipment.jpg', link: 'chat.html?db=База Оборудования', emoji: '⚙️' },
@@ -166,9 +162,7 @@ const DB_ITEMS = [
   { name: 'База SAI Global', image: 'banner_sai.jpg', link: 'sai.html', emoji: '📊' },
   { name: 'Общение', image: 'banner_communication.jpg', link: 'messenger.html', emoji: '💬' },
   { name: 'Псевдо диск L', image: 'banner_disk_l.jpg', link: 'disk_l.html', emoji: '💾' },
-  { name: 'База слэнга', image: 'banner_slang.jpg', link: 'slang.html', emoji: '📚' },
-  // НОВАЯ КАРТОЧКА:
-  { name: 'Мой Чек-лист', image: '', link: 'tasks.html', emoji: '✅' } 
+  { name: 'База слэнга', image: 'banner_slang.jpg', link: 'slang.html', emoji: '📚' }
 ];
 
 let filteredItems = [...DB_ITEMS];
@@ -190,10 +184,9 @@ function renderGrid() {
   }
 
   grid.innerHTML = filteredItems.map(item => {
-    // Если картинка есть в списке - выводим img, иначе - эмодзи
+    // Если картинки нет (для Чек-листа), рисуем градиент с эмодзи
     const imgHtml = item.image 
       ? `<div class="db-image" style="background-image: url('${item.image}');">
-           <!-- Фоллбэк, если картинка не загрузится -->
            <div class="db-image-placeholder" style="display:none;">${item.emoji}</div>
          </div>`
       : `<div class="db-image"><div class="db-image-placeholder">${item.emoji}</div></div>`;
@@ -206,12 +199,12 @@ function renderGrid() {
     `;
   }).join('');
 
-  // Обработка ошибок загрузки картинок (если файла нет, показываем эмодзи)
+  // Фоллбэк: если картинка не найдена, показываем эмодзи
   const images = grid.querySelectorAll('.db-image');
-  images.forEach((imgDiv, index) => {
+  images.forEach((imgDiv) => {
     const bg = imgDiv.style.backgroundImage;
     if (bg && bg !== 'none') {
-      const url = bg.slice(5, -2); // Вырезаем url('...')
+      const url = bg.slice(5, -2);
       const img = new Image();
       img.onerror = () => {
         imgDiv.style.backgroundImage = 'none';
@@ -238,7 +231,7 @@ function filterItems() {
 function logout() {
   if (!confirm('Выйти из аккаунта?')) return;
   localStorage.removeItem('zenit-user');
-  location.href = 'index.html'; // Или 'login.html', если у тебя вход на отдельной странице
+  location.href = 'index.html';
 }
 
 // ========== СТАРТ ==========

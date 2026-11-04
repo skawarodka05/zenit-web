@@ -9,12 +9,11 @@
 body { background: #0A0A1A; color: #fff; min-height: 100vh; }
 
 .header { display: flex; align-items: center; gap: 12px; padding: 16px; background: #14142B; border-bottom: 1px solid rgba(0, 255, 255, 0.3); position: sticky; top: 0; z-index: 100; }
-.logo-wrap { display: flex; align-items: center; gap: 12px; cursor: pointer; flex: 1; text-decoration: none; color: inherit; }
+.logo-wrap { display: flex; align-items: center; gap: 12px; flex: 1; text-decoration: none; color: inherit; }
 .logo-img { width: 44px; height: 44px; object-fit: contain; }
 .logo-text h1 { font-size: 22px; font-weight: 900; letter-spacing: 1px; }
 .logo-text p { font-size: 13px; color: #00FFFF; }
-.header-btn { width: 44px; height: 44px; border-radius: 12px; background: #0A0A1A; border: 1px solid rgba(0, 255, 255, 0.5); color: #00FFFF; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; text-decoration: none; transition: all 0.2s; }
-.header-btn:hover { background: rgba(0, 255, 255, 0.15); }
+.header-btn { width: 44px; height: 44px; border-radius: 12px; background: #0A0A1A; border: 1px solid rgba(0, 255, 255, 0.5); color: #00FFFF; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; text-decoration: none; }
 .header-btn.pink { border-color: rgba(255, 0, 255, 0.5); color: #FF00FF; }
 
 .container { max-width: 900px; margin: 0 auto; padding: 16px; }
@@ -27,8 +26,6 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; }
 
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; }
 .db-card { background: #14142B; border: 1px solid rgba(0, 255, 255, 0.5); border-radius: 14px; overflow: hidden; text-decoration: none; color: #fff; display: flex; flex-direction: column; transition: all 0.2s; }
-.db-card:hover { border-color: #00FFFF; box-shadow: 0 0 15px rgba(0, 255, 255, 0.2); }
-
 .db-image { width: 100%; height: 140px; border-bottom: 1px solid rgba(0, 255, 255, 0.3); position: relative; background: #0A0A1A; }
 .db-image img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .db-image-placeholder { width: 100%; height: 100%; position: absolute; top: 0; left: 0; display: flex; align-items: center; justify-content: center; font-size: 48px; background: linear-gradient(135deg, rgba(255,0,255,0.4), rgba(0,255,255,0.4)); }
@@ -43,7 +40,7 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; }
     <img src="logo_zenit.png" alt="ZENIT" class="logo-img" onerror="this.style.display='none'">
     <div class="logo-text">
       <h1>ZENIT</h1>
-      <p id="header-role">Загрузка...</p>
+      <p id="header-role">Гость</p>
     </div>
   </a>
   <a href="tasks.html" class="header-btn" title="Мой Чек-лист">✅</a>
@@ -52,25 +49,19 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; }
 
 <div class="container">
   <a href="profile.html" class="user-card">
-    <div class="user-name" id="user-name">Загрузка...</div>
+    <div class="user-name" id="user-name">Гость</div>
     <div class="user-profile-link">Профиль →</div>
   </a>
 
   <div class="search-bar">
-    <input type="text" class="search-input" id="search-input" placeholder="🔍 Поиск раздела..." oninput="filterItems()">
+    <input type="text" class="search-input" id="search-input" placeholder="🔍 Поиск раздела...">
   </div>
 
   <div class="grid" id="grid"></div>
 </div>
 
 <script>
-// Конфигурация
-const ROLE_TITLES = {
-  MANAGER: 'Менеджер', DEPUTY_DIRECTOR: 'Заместитель директора', DIRECTOR: 'Директор',
-  TU: 'ТУ', OD: 'ОД', ID: 'ИД', MODERATOR_ZENIT: 'Модератор Zenit', LEAD_DEV_ZENIT: 'Ведущий разработчик Zenit'
-};
-
-// Данные карточек
+// Список карточек
 const DB_ITEMS = [
   { name: 'Мой Чек-лист', image: 'https://raw.githubusercontent.com/skawarodka05/zenit-web/main/banner_tasks.jpg', link: 'tasks.html', emoji: '✅' },
   { name: 'База Документов', image: 'banner_docs.jpg', link: 'chat.html?db=База Документов', emoji: '📄' },
@@ -87,67 +78,68 @@ const DB_ITEMS = [
   { name: 'База слэнга', image: 'banner_slang.jpg', link: 'slang.html', emoji: '📚' }
 ];
 
-// 1. Пытаемся взять юзера (если ошибка - просто игнорим)
-let user = null;
-try { user = JSON.parse(localStorage.getItem('zenit-user')); } catch(e) {}
-
-// 2. Заполняем шапку
-if (user) {
-  document.getElementById('user-name').textContent = user.name || 'Гость';
-  document.getElementById('header-role').textContent = ROLE_TITLES[user.role] || user.role || '';
-}
-
-// 3. Рисуем сетку
-function renderGrid(items) {
+// Функция отрисовки
+function drawGrid(items) {
   const grid = document.getElementById('grid');
+  if (!grid) return;
+
   if (items.length === 0) {
     grid.innerHTML = '<div class="empty">Ничего не найдено</div>';
     return;
   }
-  
+
   let html = '';
-  items.forEach(item => {
-    let imgHtml = '';
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i];
+    let img = '';
     if (item.image) {
-      imgHtml = `
-        <div class="db-image">
-          <img src="${item.image}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-          <div class="db-image-placeholder" style="display:none;">${item.emoji}</div>
-        </div>`;
+      img = `<div class="db-image">
+               <img src="${item.image}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+               <div class="db-image-placeholder" style="display:none;">${item.emoji}</div>
+             </div>`;
     } else {
-      imgHtml = `<div class="db-image"><div class="db-image-placeholder">${item.emoji}</div></div>`;
+      img = `<div class="db-image"><div class="db-image-placeholder">${item.emoji}</div></div>`;
     }
-    
-    html += `
-      <a href="${item.link}" class="db-card">
-        ${imgHtml}
-        <div class="db-title">${item.name}</div>
-      </a>`;
-  });
-  
+    html += `<a href="${item.link}" class="db-card">${img}<div class="db-title">${item.name}</div></a>`;
+  }
   grid.innerHTML = html;
 }
 
-// 4. Поиск
-function filterItems() {
-  const q = document.getElementById('search-input').value.toLowerCase().trim();
-  if (!q) {
-    renderGrid(DB_ITEMS);
-  } else {
-    const filtered = DB_ITEMS.filter(i => i.name.toLowerCase().includes(q));
-    renderGrid(filtered);
+// Функция выхода (без редиректа, просто очищает кэш)
+function logout() {
+  if (confirm('Выйти из аккаунта?')) {
+    localStorage.removeItem('zenit-user');
+    alert('Вы вышли из аккаунта. (Перезагрузите страницу)');
+    location.reload();
   }
 }
 
-// 5. Выход
-function logout() {
-  if (!confirm('Выйти из аккаунта?')) return;
-  localStorage.removeItem('zenit-user');
-  location.href = 'register.html'; 
-}
+// === ПРОСТОЙ ЗАПУСК БЕЗ РЕДИРЕКТОВ ===
+// 1. Пробуем получить имя из кэша
+try {
+  const rawUser = localStorage.getItem('zenit-user');
+  if (rawUser) {
+    const u = JSON.parse(rawUser);
+    if (u && u.name) {
+      document.getElementById('user-name').textContent = u.name;
+      document.getElementById('header-role').textContent = u.role || 'Сотрудник';
+    }
+  }
+} catch(e) { console.log("Ошибка чтения профиля"); }
 
-// 6. Запуск
-renderGrid(DB_ITEMS);
+// 2. Рисуем карточки сразу
+drawGrid(DB_ITEMS);
+
+// 3. Привязываем поиск
+document.getElementById('search-input').addEventListener('input', function(e) {
+  const q = e.target.value.toLowerCase().trim();
+  if (!q) {
+    drawGrid(DB_ITEMS);
+  } else {
+    const filtered = DB_ITEMS.filter(i => i.name.toLowerCase().includes(q));
+    drawGrid(filtered);
+  }
+});
 </script>
 </body>
 </html>

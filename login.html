@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>ZENIT · Вход</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+body { background: #0A0A1A; color: #fff; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+
+.card { background: #14142B; border: 1px solid rgba(0, 255, 255, 0.4); border-radius: 16px; padding: 30px; max-width: 400px; width: 100%; box-shadow: 0 0 30px rgba(0, 255, 255, 0.1); }
+.logo { text-align: center; margin-bottom: 20px; }
+.logo h1 { font-size: 28px; font-weight: 900; letter-spacing: 2px; color: #fff; }
+.logo p { font-size: 13px; color: #00FFFF; }
+
+.input-group { margin-bottom: 16px; }
+.input-group label { display: block; font-size: 12px; color: #B0B0C0; margin-bottom: 6px; font-weight: 600; }
+.input-group input { width: 100%; padding: 14px; border-radius: 12px; background: #0A0A1A; border: 1px solid rgba(0, 255, 255, 0.4); color: #fff; font-size: 15px; outline: none; transition: all 0.2s; }
+.input-group input:focus { border-color: #00FFFF; box-shadow: 0 0 10px rgba(0, 255, 255, 0.2); }
+
+.btn { width: 100%; padding: 16px; border-radius: 12px; border: none; background: linear-gradient(90deg, #FF00FF, #00FFFF); color: #fff; font-size: 16px; font-weight: 700; cursor: pointer; margin-top: 10px; transition: all 0.2s; }
+.btn:hover { transform: translateY(-2px); box-shadow: 0 0 20px rgba(0, 255, 255, 0.5); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.error-msg { color: #FF00FF; font-size: 13px; text-align: center; margin-top: 12px; display: none; }
+
+.footer-link { text-align: center; margin-top: 20px; font-size: 14px; color: #B0B0C0; }
+.footer-link a { color: #00FFFF; text-decoration: none; font-weight: bold; }
+.footer-link a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="logo">
+    <h1>ZENIT</h1>
+    <p>Вход в систему</p>
+  </div>
+
+  <div class="input-group">
+    <label>Email</label>
+    <input type="email" id="login-email" placeholder="example@zenit.ru">
+  </div>
+
+  <div class="input-group">
+    <label>Пароль</label>
+    <input type="password" id="login-password" placeholder="••••••••">
+  </div>
+
+  <button class="btn" id="login-btn" onclick="doLogin()">ВОЙТИ</button>
+  
+  <div class="error-msg" id="error-msg">Неверный email или пароль</div>
+
+  <div class="footer-link">
+    Нет аккаунта? <a href="register.html">Зарегистрироваться</a>
+  </div>
+</div>
+
+<script>
+const SB_URL = 'https://owkizfikhtiqbwftqgfd.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93a2l6ZmlraHRpcWJ3ZnRxZ2ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE0OTYxMDYsImV4cCI6MjEwNzA3MjEwNn0.EHVyXiBYuSJrDVd_k5zAbwqT3ZPFF43p5Uh4_huKoOo';
+window.SB = window.supabase.createClient(SB_URL, SB_KEY);
+
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  const btn = document.getElementById('login-btn');
+  const err = document.getElementById('error-msg');
+
+  if (!email || !password) {
+    err.textContent = 'Заполните все поля';
+    err.style.display = 'block';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Вход...';
+  err.style.display = 'none';
+
+  try {
+    // Ищем пользователя в базе
+    const { data, error } = await window.SB
+      .from('users')
+      .select('*')
+      .eq('email', email)
+      .eq('password', password)
+      .single();
+
+    if (error || !data) throw new Error('Неверный логин или пароль');
+
+    // Сохраняем в браузер
+    localStorage.setItem('zenit-user', JSON.stringify(data));
+    
+    // Перекидываем на главную
+    location.href = 'index.html';
+
+  } catch (e) {
+    err.textContent = e.message;
+    err.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = 'ВОЙТИ';
+  }
+}
+</script>
+</body>
+</html>

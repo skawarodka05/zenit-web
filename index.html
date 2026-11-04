@@ -17,15 +17,17 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; }
 .header-btn.pink { border-color: rgba(255, 0, 255, 0.5); color: #FF00FF; }
 
 .container { max-width: 900px; margin: 0 auto; padding: 16px; }
-.user-card { background: #14142B; border: 1px solid rgba(255, 0, 255, 0.5); border-radius: 12px; padding: 14px 16px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; text-decoration: none; color: #fff; }
+.user-card { background: #14142B; border: 1px solid rgba(255, 0, 255, 0.5); border-radius: 12px; padding: 14px 16px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; text-decoration: none; color: #fff; transition: all 0.2s; }
+.user-card:hover { background: rgba(255, 0, 255, 0.05); }
 .user-name { font-size: 16px; font-weight: 700; }
-.user-profile-link { font-size: 13px; color: #00FFFF; }
+.user-profile-link { font-size: 13px; color: #00FFFF; font-weight: bold; }
 
 .search-bar { margin-bottom: 24px; }
 .search-input { width: 100%; padding: 14px 18px; border-radius: 12px; background: #14142B; border: 1px solid rgba(0, 255, 255, 0.5); color: #fff; font-size: 15px; outline: none; }
 
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; }
-.db-card { background: #14142B; border: 1px solid rgba(0, 255, 255, 0.5); border-radius: 14px; overflow: hidden; text-decoration: none; color: #fff; display: flex; flex-direction: column; }
+.db-card { background: #14142B; border: 1px solid rgba(0, 255, 255, 0.5); border-radius: 14px; overflow: hidden; text-decoration: none; color: #fff; display: flex; flex-direction: column; transition: all 0.2s; }
+.db-card:hover { border-color: #00FFFF; box-shadow: 0 0 15px rgba(0, 255, 255, 0.2); }
 .db-image { width: 100%; height: 140px; border-bottom: 1px solid rgba(0, 255, 255, 0.3); position: relative; background: #0A0A1A; }
 .db-image img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .db-image-placeholder { width: 100%; height: 100%; position: absolute; top: 0; left: 0; display: flex; align-items: center; justify-content: center; font-size: 48px; background: linear-gradient(135deg, rgba(255,0,255,0.4), rgba(0,255,255,0.4)); }
@@ -44,13 +46,15 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; }
     </div>
   </a>
   <a href="tasks.html" class="header-btn" title="Мой Чек-лист">✅</a>
+  <!-- Кнопка выхода -->
   <button class="header-btn pink" onclick="logout()" title="Выйти">🚪</button>
 </div>
 
 <div class="container">
-  <a href="profile.html" class="user-card">
+  <!-- Карточка пользователя (ведет в профиль или на вход) -->
+  <a href="#" id="profile-link" class="user-card">
     <div class="user-name" id="user-name">Гость</div>
-    <div class="user-profile-link">Профиль →</div>
+    <div class="user-profile-link" id="profile-action">Войти →</div>
   </a>
 
   <div class="search-bar">
@@ -61,7 +65,6 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; }
 </div>
 
 <script>
-// Данные карточек
 const DB_ITEMS = [
   { name: 'Мой Чек-лист', image: 'https://raw.githubusercontent.com/skawarodka05/zenit-web/main/banner_tasks.jpg', link: 'tasks.html', emoji: '✅' },
   { name: 'База Документов', image: 'banner_docs.jpg', link: 'chat.html?db=База Документов', emoji: '📄' },
@@ -78,51 +81,54 @@ const DB_ITEMS = [
   { name: 'База слэнга', image: 'banner_slang.jpg', link: 'slang.html', emoji: '📚' }
 ];
 
-// Безопасное получение пользователя
 function getUser() {
     try {
         const raw = localStorage.getItem('zenit-user');
         if (!raw || raw === 'undefined') return null;
         return JSON.parse(raw);
-    } catch(e) {
-        return null;
-    }
+    } catch(e) { return null; }
 }
 
-// Отрисовка сетки
 function drawGrid(items) {
     const grid = document.getElementById('grid');
     if (!grid) return;
-
     if (items.length === 0) {
         grid.innerHTML = '<div class="empty">Ничего не найдено</div>';
         return;
     }
-
     let html = '';
     items.forEach(item => {
         let imgHtml = item.image 
             ? `<div class="db-image"><img src="${item.image}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div class="db-image-placeholder" style="display:none;">${item.emoji}</div></div>`
             : `<div class="db-image"><div class="db-image-placeholder">${item.emoji}</div></div>`;
-        
         html += `<a href="${item.link}" class="db-card">${imgHtml}<div class="db-title">${item.name}</div></a>`;
     });
     grid.innerHTML = html;
 }
 
-// Инициализация при загрузке
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Проверяем пользователя
     const user = getUser();
+    const userNameEl = document.getElementById('user-name');
+    const headerRoleEl = document.getElementById('header-role');
+    const profileLink = document.getElementById('profile-link');
+    const profileAction = document.getElementById('profile-action');
+
     if (user && user.name) {
-        document.getElementById('user-name').textContent = user.name;
-        document.getElementById('header-role').textContent = user.role || 'Сотрудник';
+        // ЕСЛИ АВТОРИЗОВАН
+        userNameEl.textContent = user.name;
+        headerRoleEl.textContent = user.role || 'Сотрудник';
+        profileLink.href = 'profile.html';
+        profileAction.textContent = 'Профиль →';
+    } else {
+        // ЕСЛИ ГОСТЬ
+        userNameEl.textContent = 'Гость';
+        headerRoleEl.textContent = 'Требуется вход';
+        profileLink.href = 'register.html'; // Ведем на страницу авторизации!
+        profileAction.textContent = 'Войти →';
     }
 
-    // 2. Рисуем карточки
     drawGrid(DB_ITEMS);
 
-    // 3. Поиск
     document.getElementById('search-input').addEventListener('input', (e) => {
         const q = e.target.value.toLowerCase().trim();
         const filtered = q ? DB_ITEMS.filter(i => i.name.toLowerCase().includes(q)) : DB_ITEMS;
@@ -130,11 +136,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-// Выход
 function logout() {
     if (confirm('Выйти?')) {
         localStorage.removeItem('zenit-user');
-        location.href = 'register.html'; // Укажи тут свою страницу входа!
+        location.reload();
     }
 }
 </script>

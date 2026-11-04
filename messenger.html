@@ -106,7 +106,6 @@ body { background: #0A0A1A; color: #fff; display: flex; flex-direction: column; 
 </div>
 
 <script>
-// ========== КОНФИГ ==========
 const SB_URL = 'https://owkizfikhtiqbwftqgfd.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93a2l6ZmlraHRpcWJ3ZnRxZ2ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE0OTYxMDYsImV4cCI6MjEwNzA3MjEwNn0.EHVyXiBYuSJrDVd_k5zAbwqT3ZPFF43p5Uh4_huKoOo';
 window.SB = window.supabase.createClient(SB_URL, SB_KEY);
@@ -114,21 +113,14 @@ window.SB = window.supabase.createClient(SB_URL, SB_KEY);
 const DB_NAME = 'Общение';
 let currentUser = JSON.parse(localStorage.getItem('zenit-user') || 'null');
 let allMessages = [];
-let selectedFile = null;
-let selectedImage = null;
+let selectedFile = null, selectedImage = null;
 
 if (!currentUser) { location.href = 'index.html'; }
 document.getElementById('info').textContent = currentUser.name + ' · ' + (currentUser.role || '');
 
-// ========== ЗАГРУЗКА СООБЩЕНИЙ ==========
 async function loadMessages() {
   try {
-    const { data, error } = await window.SB
-      .from('posts')
-      .select('*')
-      .eq('database_name', DB_NAME)
-      .order('id', { ascending: true });
-
+    const { data, error } = await window.SB.from('posts').select('*').eq('database_name', DB_NAME).order('id', { ascending: true });
     if (error) throw error;
     allMessages = data || [];
     renderMessages(allMessages);
@@ -140,7 +132,6 @@ async function loadMessages() {
 
 function renderMessages(msgs) {
   const container = document.getElementById('messages');
-
   if (!msgs || msgs.length === 0) {
     container.innerHTML = '<div class="empty">Пока нет сообщений</div>';
     return;
@@ -163,7 +154,7 @@ function renderMessages(msgs) {
           ${m.image_url ? `<img class="bubble-image" src="${m.image_url}" onclick="viewImage('${m.image_url}')">` : ''}
           ${m.file_url ? `<a class="bubble-file" href="${m.file_url}" target="_blank">📎 Файл</a>` : ''}
           
-          <div id="reactions-${m.id}"></div> <!-- Контейнер для реакций -->
+          <div id="reactions-${m.id}"></div>
           
           ${isMine ? `<button class="bubble-delete" onclick="deleteMessage(${m.id})">Удалить</button>` : ''}
         </div>
@@ -174,7 +165,6 @@ function renderMessages(msgs) {
 
   container.scrollTop = container.scrollHeight;
 
-  // Асинхронно подгружаем реакции
   msgs.forEach(async (m) => {
     const html = await renderReactionsHtml(m.id);
     const el = document.getElementById(`reactions-${m.id}`);
@@ -189,9 +179,13 @@ function filterMessages() {
   renderMessages(filtered);
 }
 
-// ========== РЕАКЦИИ ==========
+// ========== РЕАКЦИИ (С ОБРАБОТКОЙ ОШИБОК) ==========
 async function loadReactions(postId) {
-  const { data } = await window.SB.from('reactions').select('*').eq('post_id', postId);
+  const { data, error } = await window.SB.from('reactions').select('*').eq('post_id', postId);
+  if (error) {
+    console.error("Ошибка загрузки реакций:", error);
+    return [];
+  }
   return data || [];
 }
 
@@ -199,42 +193,49 @@ async function toggleReaction(postId, emoji, event) {
   if(event) event.stopPropagation();
   const userName = currentUser.name;
   
-  const { data: existing } = await window.SB.from('reactions')
-    .select('*').eq('post_id', postId).eq('user_name', userName).eq('emoji', emoji);
+  try {
+    const { data: existing, error: selectError } = await window.SB.from('reactions')
+      .select('*').eq('post_id', postId).eq('user_name', userName).eq('emoji', emoji);
 
-  if (existing && existing.length > 0) {
-    await window.SB.from('reactions').delete().eq('post_id', postId).eq('user_name', userName).eq('emoji', emoji);
-  } else {
-    await window.SB.from('reactions').insert({ post_id: postId, user_name: userName, emoji: emoji });
+    if (selectError) throw selectError;
+
+    if (existing && existing.length > 0) {
+      const { error: delError } = await window.SB.from('reactions')
+        .delete().eq('post_id', postId).eq('user_name', userName).eq('emoji', emoji);
+      if (delError) throw delError;
+    } else {
+      const { error: insError } = await window.SB.from('reactions')
+        .insert({ post_id: postId, user_name: userName, emoji: emoji });
+      if (insError) throw insError;
+    }
+    
+    const newHtml = await renderReactionsHtml(postId);
+    const container = document.getElementById(`reactions-${postId}`);
+    if (container) container.innerHTML = newHtml;
+  } catch (error) {
+    console.error("Ошибка реакции:", error);
+    alert("Не удалось поставить реакцию:\n" + error.message);
   }
-  
-  const newHtml = await renderReactionsHtml(postId);
-  const container = document.getElementById(`reactions-${postId}`);
-  if (container) container.innerHTML = newHtml;
 }
 
 async function renderReactionsHtml(postId) {
   const reactions = await loadReactions(postId);
   const emojis = ['👍', '❤️', '🔥'];
   const userName = currentUser.name;
-  
   let html = '<div class="reactions-row">';
+  
   emojis.forEach(emoji => {
     const count = reactions.filter(r => r.emoji === emoji).length;
     const isMine = reactions.some(r => r.emoji === emoji && r.user_name === userName);
-    
-    html += `
-      <button class="reaction-btn ${isMine ? 'active' : ''}" onclick="toggleReaction(${postId}, '${emoji}', event)">
-        <span>${emoji}</span>
-        ${count > 0 ? `<span>${count}</span>` : ''}
-      </button>
-    `;
+    html += `<button class="reaction-btn ${isMine ? 'active' : ''}" onclick="toggleReaction(${postId}, '${emoji}', event)">
+      <span>${emoji}</span>${count > 0 ? `<span>${count}</span>` : ''}
+    </button>`;
   });
   html += '</div>';
   return html;
 }
 
-// ========== ВЫБОР ВЛОЖЕНИЙ ==========
+// ========== ОСТАЛЬНОЕ ==========
 function onFileSelected(input, type) {
   const file = input.files[0];
   if (!file) return;
@@ -260,7 +261,6 @@ function clearAttachment(type) {
   updateAttachmentsPreview();
 }
 
-// ========== ОТПРАВКА ==========
 async function uploadFile(file, bucket) {
   const fileName = 'msg_' + Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
   const { error } = await window.SB.storage.from(bucket).upload(fileName, file);
@@ -283,32 +283,21 @@ async function sendMessage() {
     if (selectedImage) imageUrl = await uploadFile(selectedImage, 'images');
 
     const { error } = await window.SB.from('posts').insert({
-      database_name: DB_NAME,
-      title: 'Сообщение',
-      content: content || '📎 Вложение',
-      author: currentUser.name,
-      role: currentUser.role,
-      author_avatar: currentUser.avatar_url || '',
-      has_file: !!fileUrl,
-      has_image: !!imageUrl,
-      file_url: fileUrl,
-      image_url: imageUrl,
+      database_name: DB_NAME, title: 'Сообщение', content: content || '📎 Вложение',
+      author: currentUser.name, role: currentUser.role, author_avatar: currentUser.avatar_url || '',
+      has_file: !!fileUrl, has_image: !!imageUrl, file_url: fileUrl, image_url: imageUrl
     });
 
     if (error) throw error;
 
-    input.value = '';
-    input.style.height = 'auto';
+    input.value = ''; input.style.height = 'auto';
     selectedFile = null; selectedImage = null;
     document.getElementById('file-btn').classList.remove('active');
     document.getElementById('image-btn').classList.remove('active');
     updateAttachmentsPreview();
     await loadMessages();
-  } catch (e) {
-    alert('Ошибка: ' + e.message);
-  } finally {
-    btn.disabled = false;
-  }
+  } catch (e) { alert('Ошибка: ' + e.message); } 
+  finally { btn.disabled = false; }
 }
 
 async function deleteMessage(id) {
@@ -341,9 +330,7 @@ msgInput.addEventListener('input', () => {
 });
 
 loadMessages();
-setInterval(() => {
-  if (!document.getElementById('search-input').value) loadMessages();
-}, 10000); // Автообновление раз в 10 сек
+setInterval(() => { if (!document.getElementById('search-input').value) loadMessages(); }, 10000);
 </script>
 </body>
 </html>

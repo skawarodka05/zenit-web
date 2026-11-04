@@ -23,7 +23,7 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; }
 .header-btn.pink { border-color: rgba(255, 0, 255, 0.5); color: #FF00FF; }
 .header-btn.pink:hover { background: rgba(255, 0, 255, 0.15); }
 
-.container { max-width: 900px; margin: 0 auto; padding: 16px; }
+.container { max-width: 1000px; margin: 0 auto; padding: 16px; } /* Чуть увеличили максимальную ширину контейнера */
 .user-card { background: #14142B; border: 1px solid rgba(255, 0, 255, 0.5); border-radius: 12px; padding: 14px 16px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; text-decoration: none; color: #fff; transition: all 0.2s; }
 .user-card:hover { background: rgba(255, 0, 255, 0.05); }
 .user-name { font-size: 16px; font-weight: 700; }
@@ -33,14 +33,47 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; }
 .search-input { width: 100%; padding: 14px 18px; border-radius: 12px; background: #14142B; border: 1px solid rgba(0, 255, 255, 0.5); color: #fff; font-size: 15px; outline: none; transition: all 0.2s; }
 .search-input:focus { border-color: #00FFFF; box-shadow: 0 0 12px rgba(0, 255, 255, 0.3); }
 
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; }
-.db-card { background: #14142B; border: 1px solid rgba(0, 255, 255, 0.5); border-radius: 14px; overflow: hidden; text-decoration: none; color: #fff; display: flex; flex-direction: column; transition: all 0.2s; }
+/* 📐 УВЕЛИЧЕННАЯ СЕТКА КАРТОЧЕК */
+.grid { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); /* Было 160px, стало 220px */
+    gap: 16px; 
+}
+.db-card { 
+    background: #14142B; 
+    border: 1px solid rgba(0, 255, 255, 0.5); 
+    border-radius: 14px; 
+    overflow: hidden; 
+    text-decoration: none; 
+    color: #fff; 
+    display: flex; 
+    flex-direction: column; 
+    transition: all 0.2s; 
+}
 .db-card:hover { border-color: #00FFFF; box-shadow: 0 0 15px rgba(0, 255, 255, 0.2); transform: translateY(-2px); }
 
-.db-image { width: 100%; height: 140px; border-bottom: 1px solid rgba(0, 255, 255, 0.3); position: relative; background: #0A0A1A; }
+/* 📸 УВЕЛИЧЕННЫЙ БАННЕР */
+.db-image { 
+    width: 100%; 
+    height: 200px; /* Было 140px, стало 200px */
+    border-bottom: 1px solid rgba(0, 255, 255, 0.3); 
+    position: relative; 
+    background: #0A0A1A; 
+}
 .db-image img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.db-image-placeholder { width: 100%; height: 100%; position: absolute; top: 0; left: 0; display: flex; align-items: center; justify-content: center; font-size: 48px; background: linear-gradient(135deg, rgba(255,0,255,0.4), rgba(0,255,255,0.4)); }
-.db-title { padding: 12px; font-size: 14px; font-weight: 700; text-align: center; }
+.db-image-placeholder { width: 100%; height: 100%; position: absolute; top: 0; left: 0; display: flex; align-items: center; justify-content: center; font-size: 56px; background: linear-gradient(135deg, rgba(255,0,255,0.4), rgba(0,255,255,0.4)); }
+
+/* 🔤 УВЕЛИЧЕННЫЙ ТЕКСТ */
+.db-title { 
+    padding: 16px 12px; 
+    font-size: 16px; /* Было 14px */
+    font-weight: 700; 
+    text-align: center; 
+    flex-grow: 1;
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+}
 .empty { text-align: center; padding: 60px 20px; color: #606060; grid-column: 1 / -1; }
 </style>
 </head>

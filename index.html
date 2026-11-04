@@ -2,6 +2,11 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
+<!-- 🛑 ЗАПРЕТ КЭШИРОВАНИЯ -->
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<!-- ------------------- -->
 <title>ZENIT · Главная</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -99,12 +104,10 @@ function getUser() {
 function drawGrid(items) {
     const grid = document.getElementById('grid');
     if (!grid) return;
-
     if (items.length === 0) {
         grid.innerHTML = '<div class="empty">Ничего не найдено</div>';
         return;
     }
-
     let html = '';
     items.forEach(item => {
         let imgHtml = item.image 
@@ -143,11 +146,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-// 🚪 ИСПРАВЛЕННАЯ ФУНКЦИЯ ВЫХОДА
 function logout() {
     if (confirm('Выйти из аккаунта?')) {
-        localStorage.removeItem('zenit-user'); // Удаляем данные
-        location.href = 'login.html';          // Перекидываем на страницу входа!
+        localStorage.removeItem('zenit-user'); 
+        location.href = 'login.html';
     }
 }
 </script>

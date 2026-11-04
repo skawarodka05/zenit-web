@@ -13,8 +13,10 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; }
 .logo-img { width: 44px; height: 44px; object-fit: contain; }
 .logo-text h1 { font-size: 22px; font-weight: 900; letter-spacing: 1px; }
 .logo-text p { font-size: 13px; color: #00FFFF; }
-.header-btn { width: 44px; height: 44px; border-radius: 12px; background: #0A0A1A; border: 1px solid rgba(0, 255, 255, 0.5); color: #00FFFF; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; text-decoration: none; }
+.header-btn { width: 44px; height: 44px; border-radius: 12px; background: #0A0A1A; border: 1px solid rgba(0, 255, 255, 0.5); color: #00FFFF; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; text-decoration: none; transition: all 0.2s; }
+.header-btn:hover { background: rgba(0, 255, 255, 0.15); }
 .header-btn.pink { border-color: rgba(255, 0, 255, 0.5); color: #FF00FF; }
+.header-btn.pink:hover { background: rgba(255, 0, 255, 0.15); }
 
 .container { max-width: 900px; margin: 0 auto; padding: 16px; }
 .user-card { background: #14142B; border: 1px solid rgba(255, 0, 255, 0.5); border-radius: 12px; padding: 14px 16px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; text-decoration: none; color: #fff; transition: all 0.2s; }
@@ -23,11 +25,13 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; }
 .user-profile-link { font-size: 13px; color: #00FFFF; font-weight: bold; }
 
 .search-bar { margin-bottom: 24px; }
-.search-input { width: 100%; padding: 14px 18px; border-radius: 12px; background: #14142B; border: 1px solid rgba(0, 255, 255, 0.5); color: #fff; font-size: 15px; outline: none; }
+.search-input { width: 100%; padding: 14px 18px; border-radius: 12px; background: #14142B; border: 1px solid rgba(0, 255, 255, 0.5); color: #fff; font-size: 15px; outline: none; transition: all 0.2s; }
+.search-input:focus { border-color: #00FFFF; box-shadow: 0 0 12px rgba(0, 255, 255, 0.3); }
 
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; }
 .db-card { background: #14142B; border: 1px solid rgba(0, 255, 255, 0.5); border-radius: 14px; overflow: hidden; text-decoration: none; color: #fff; display: flex; flex-direction: column; transition: all 0.2s; }
-.db-card:hover { border-color: #00FFFF; box-shadow: 0 0 15px rgba(0, 255, 255, 0.2); }
+.db-card:hover { border-color: #00FFFF; box-shadow: 0 0 15px rgba(0, 255, 255, 0.2); transform: translateY(-2px); }
+
 .db-image { width: 100%; height: 140px; border-bottom: 1px solid rgba(0, 255, 255, 0.3); position: relative; background: #0A0A1A; }
 .db-image img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .db-image-placeholder { width: 100%; height: 100%; position: absolute; top: 0; left: 0; display: flex; align-items: center; justify-content: center; font-size: 48px; background: linear-gradient(135deg, rgba(255,0,255,0.4), rgba(0,255,255,0.4)); }
@@ -46,12 +50,11 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; }
     </div>
   </a>
   <a href="tasks.html" class="header-btn" title="Мой Чек-лист">✅</a>
-  <!-- Кнопка выхода -->
   <button class="header-btn pink" onclick="logout()" title="Выйти">🚪</button>
 </div>
 
 <div class="container">
-  <!-- Карточка пользователя (ведет в профиль или на вход) -->
+  <!-- Клик по этой карточке ведет либо в профиль, либо на вход -->
   <a href="#" id="profile-link" class="user-card">
     <div class="user-name" id="user-name">Гость</div>
     <div class="user-profile-link" id="profile-action">Войти →</div>
@@ -65,6 +68,11 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; }
 </div>
 
 <script>
+const ROLE_TITLES = {
+  MANAGER: 'Менеджер', DEPUTY_DIRECTOR: 'Заместитель директора', DIRECTOR: 'Директор',
+  TU: 'ТУ', OD: 'ОД', ID: 'ИД', MODERATOR_ZENIT: 'Модератор Zenit', LEAD_DEV_ZENIT: 'Ведущий разработчик Zenit'
+};
+
 const DB_ITEMS = [
   { name: 'Мой Чек-лист', image: 'https://raw.githubusercontent.com/skawarodka05/zenit-web/main/banner_tasks.jpg', link: 'tasks.html', emoji: '✅' },
   { name: 'База Документов', image: 'banner_docs.jpg', link: 'chat.html?db=База Документов', emoji: '📄' },
@@ -81,6 +89,7 @@ const DB_ITEMS = [
   { name: 'База слэнга', image: 'banner_slang.jpg', link: 'slang.html', emoji: '📚' }
 ];
 
+// Безопасное получение пользователя
 function getUser() {
     try {
         const raw = localStorage.getItem('zenit-user');
@@ -89,13 +98,16 @@ function getUser() {
     } catch(e) { return null; }
 }
 
+// Отрисовка сетки
 function drawGrid(items) {
     const grid = document.getElementById('grid');
     if (!grid) return;
+
     if (items.length === 0) {
         grid.innerHTML = '<div class="empty">Ничего не найдено</div>';
         return;
     }
+
     let html = '';
     items.forEach(item => {
         let imgHtml = item.image 
@@ -106,6 +118,7 @@ function drawGrid(items) {
     grid.innerHTML = html;
 }
 
+// Запуск при загрузке страницы
 document.addEventListener('DOMContentLoaded', () => {
     const user = getUser();
     const userNameEl = document.getElementById('user-name');
@@ -116,19 +129,21 @@ document.addEventListener('DOMContentLoaded', () => {
     if (user && user.name) {
         // ЕСЛИ АВТОРИЗОВАН
         userNameEl.textContent = user.name;
-        headerRoleEl.textContent = user.role || 'Сотрудник';
-        profileLink.href = 'profile.html';
+        headerRoleEl.textContent = ROLE_TITLES[user.role] || user.role || 'Сотрудник';
+        profileLink.href = 'profile.html'; // Ведем в свой профиль
         profileAction.textContent = 'Профиль →';
     } else {
         // ЕСЛИ ГОСТЬ
         userNameEl.textContent = 'Гость';
         headerRoleEl.textContent = 'Требуется вход';
-        profileLink.href = 'register.html'; // Ведем на страницу авторизации!
+        profileLink.href = 'login.html'; // Ведем на страницу входа
         profileAction.textContent = 'Войти →';
     }
 
+    // Рисуем карточки
     drawGrid(DB_ITEMS);
 
+    // Поиск
     document.getElementById('search-input').addEventListener('input', (e) => {
         const q = e.target.value.toLowerCase().trim();
         const filtered = q ? DB_ITEMS.filter(i => i.name.toLowerCase().includes(q)) : DB_ITEMS;
@@ -136,10 +151,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+// Выход
 function logout() {
-    if (confirm('Выйти?')) {
+    if (confirm('Выйти из аккаунта?')) {
         localStorage.removeItem('zenit-user');
-        location.reload();
+        location.reload(); // Просто перезагружаем страницу, чтобы она стала "Гостем"
     }
 }
 </script>

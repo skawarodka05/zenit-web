@@ -2,122 +2,126 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>ZENIT · Чат</title>
+<title>ZENIT · Главная</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-body { background: #0A0A1A; color: #fff; min-height: 100vh; }
-.hidden { display: none !important; }
+body { background: #0A0A1A; color: #fff; min-height: 100vh; padding-bottom: 40px; }
 
-.header { display: flex; align-items: center; gap: 12px; padding: 16px; background: #14142B; border-bottom: 1px solid rgba(0, 255, 255, 0.3); position: sticky; top: 0; z-index: 100; }
-.back-btn { width: 42px; height: 42px; border-radius: 12px; background: #0A0A1A; border: 1px solid rgba(0, 255, 255, 0.5); color: #00FFFF; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.back-btn:hover { background: rgba(0, 255, 255, 0.15); }
-.header-title { flex: 1; }
-.header-title h1 { font-size: 18px; font-weight: 700; }
-.header-title p { font-size: 12px; color: #00FFFF; margin-top: 2px; }
+/* Шапка */
+.header {
+  display: flex; align-items: center; gap: 12px;
+  padding: 16px; background: #14142B;
+  border-bottom: 1px solid rgba(0, 255, 255, 0.3);
+  position: sticky; top: 0; z-index: 100;
+}
+.logo-wrap { display: flex; align-items: center; gap: 12px; cursor: pointer; flex: 1; text-decoration: none; color: inherit; }
+.logo-img { width: 44px; height: 44px; object-fit: contain; }
+.logo-text h1 { font-size: 22px; font-weight: 900; letter-spacing: 1px; }
+.logo-text p { font-size: 13px; color: #00FFFF; }
 
-.container { max-width: 700px; margin: 0 auto; padding: 16px; }
+.header-btn {
+  width: 44px; height: 44px; border-radius: 12px;
+  background: #0A0A1A; border: 1px solid rgba(0, 255, 255, 0.5);
+  color: #00FFFF; font-size: 20px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  text-decoration: none; transition: all 0.2s;
+}
+.header-btn:hover { background: rgba(0, 255, 255, 0.15); }
+.header-btn.pink { border-color: rgba(255, 0, 255, 0.5); color: #FF00FF; }
+.header-btn.pink:hover { background: rgba(255, 0, 255, 0.15); }
 
-.search-bar { margin-bottom: 16px; }
-.search-input { width: 100%; padding: 14px 18px; border-radius: 12px; background: #14142B; border: 1px solid rgba(0, 255, 255, 0.4); color: #fff; font-size: 14px; outline: none; transition: all 0.2s; }
+/* Контейнер */
+.container { max-width: 900px; margin: 0 auto; padding: 16px; }
+
+/* Имя пользователя */
+.user-card {
+  background: #14142B; border: 1px solid rgba(255, 0, 255, 0.5);
+  border-radius: 12px; padding: 14px 16px; margin-bottom: 20px;
+  display: flex; justify-content: space-between; align-items: center;
+  cursor: pointer; transition: all 0.2s; text-decoration: none; color: #fff;
+}
+.user-card:hover { background: rgba(255, 0, 255, 0.05); }
+.user-name { font-size: 16px; font-weight: 700; }
+.user-profile-link { font-size: 13px; color: #00FFFF; }
+
+/* Поиск */
+.search-bar { margin-bottom: 24px; }
+.search-input {
+  width: 100%; padding: 14px 18px; border-radius: 12px;
+  background: #14142B; border: 1px solid rgba(0, 255, 255, 0.5);
+  color: #fff; font-size: 15px; outline: none; transition: all 0.2s;
+}
 .search-input:focus { border-color: #00FFFF; box-shadow: 0 0 12px rgba(0, 255, 255, 0.3); }
 .search-input::placeholder { color: #606060; }
 
-.composer { background: #14142B; border: 1px solid rgba(0, 255, 255, 0.4); border-radius: 14px; padding: 16px; margin-bottom: 20px; }
-.composer-title { font-size: 14px; font-weight: 700; margin-bottom: 10px; color: #00FFFF; }
-.composer input[type="text"], .composer textarea { width: 100%; padding: 12px 14px; border-radius: 10px; background: #0A0A1A; border: 1px solid rgba(0, 255, 255, 0.3); color: #fff; font-size: 14px; outline: none; margin-bottom: 10px; font-family: inherit; resize: vertical; }
-.composer input:focus, .composer textarea:focus { border-color: #00FFFF; box-shadow: 0 0 10px rgba(0, 255, 255, 0.3); }
-.composer textarea { min-height: 80px; max-height: 200px; }
-.composer-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-.file-btn { padding: 10px 14px; border-radius: 10px; background: transparent; border: 1px solid #00FFFF; color: #00FFFF; font-size: 13px; cursor: pointer; font-weight: 600; }
-.file-btn.active { background: rgba(255, 0, 255, 0.15); border-color: #FF00FF; color: #FF00FF; }
-.file-btn:hover { background: rgba(0, 255, 255, 0.1); }
-.post-btn { margin-left: auto; padding: 12px 24px; background: linear-gradient(90deg, #FF00FF, #00FFFF); border: none; border-radius: 10px; color: #fff; font-weight: 700; cursor: pointer; font-size: 14px; }
-.post-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+/* Сетка карточек */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 14px;
+}
 
-.post { background: #14142B; border: 1px solid rgba(0, 255, 255, 0.3); border-radius: 14px; padding: 16px; margin-bottom: 14px; }
-.post-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-.post-avatar { width: 42px; height: 42px; border-radius: 50%; background: linear-gradient(135deg, #FF00FF, #00FFFF); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 18px; flex-shrink: 0; background-size: cover; background-position: center; overflow: hidden; transition: transform 0.15s; }
-.post-avatar:hover { transform: scale(1.05); }
-.post-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
-.post-author { flex: 1; cursor: pointer; }
-.post-author:hover .post-author-name { color: #00FFFF; }
-.post-author-name { font-size: 14px; font-weight: 700; transition: color 0.15s; }
-.post-author-role { font-size: 11px; color: #00FFFF; }
-.post-delete { width: 32px; height: 32px; border-radius: 8px; background: transparent; border: 1px solid rgba(255, 0, 255, 0.3); color: #FF00FF; cursor: pointer; font-size: 16px; }
-.post-delete:hover { background: rgba(255, 0, 255, 0.15); }
-.post-title { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
-.post-content { font-size: 14px; color: #D0D0E0; line-height: 1.5; margin-bottom: 10px; }
-.post-image { width: 100%; max-height: 300px; object-fit: cover; border-radius: 10px; margin-bottom: 10px; border: 1px solid rgba(255, 0, 255, 0.3); cursor: pointer; }
-.post-file { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; background: #0A0A1A; border: 1px solid rgba(0, 255, 255, 0.4); border-radius: 10px; color: #00FFFF; font-size: 13px; text-decoration: none; margin-bottom: 10px; }
-.post-file:hover { background: rgba(0, 255, 255, 0.1); }
+.db-card {
+  background: #14142B; border: 1px solid rgba(0, 255, 255, 0.5);
+  border-radius: 14px; overflow: hidden; cursor: pointer;
+  display: flex; flex-direction: column; text-decoration: none; color: #fff;
+  transition: all 0.2s;
+}
+.db-card:hover { border-color: #00FFFF; box-shadow: 0 0 15px rgba(0, 255, 255, 0.2); transform: translateY(-2px); }
 
-.reactions-row { display: flex; gap: 6px; margin-top: 4px; margin-bottom: 10px; flex-wrap: wrap; }
-.reaction-btn { display: flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 20px; background: #0A0A1A; border: 1px solid rgba(176, 176, 192, 0.3); color: #B0B0C0; font-size: 13px; cursor: pointer; transition: all 0.2s; user-select: none; }
-.reaction-btn:hover { background: rgba(0, 255, 255, 0.1); }
-.reaction-btn.active { background: rgba(0, 255, 255, 0.15); border-color: #00FFFF; color: #00FFFF; }
+.db-image {
+  width: 100%; height: 140px;
+  border-bottom: 1px solid rgba(0, 255, 255, 0.3);
+  position: relative; overflow: hidden;
+  background: #0A0A1A;
+}
 
-.comments-toggle { display: flex; align-items: center; gap: 6px; color: #00FFFF; font-size: 13px; font-weight: 600; cursor: pointer; padding: 6px 0; }
-.comments-toggle:hover { color: #FF00FF; }
-.comments-list { margin-top: 10px; border-top: 1px solid rgba(0, 255, 255, 0.15); padding-top: 10px; }
-.comment { display: flex; align-items: flex-start; gap: 8px; padding: 8px; background: #0A0A1A; border-radius: 8px; margin-bottom: 6px; }
-.comment-avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #FF00FF, #00FFFF); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 13px; flex-shrink: 0; background-size: cover; background-position: center; overflow: hidden; cursor: pointer; }
-.comment-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
-.comment-author { color: #FF00FF; font-size: 11px; font-weight: 700; cursor: pointer; }
-.comment-author:hover { color: #00FFFF; }
-.comment-text { color: #fff; font-size: 13px; margin-top: 2px; }
-.comment-delete { background: transparent; border: none; color: #606060; cursor: pointer; font-size: 14px; padding: 2px 6px; }
-.comment-delete:hover { color: #FF00FF; }
-.comment-form { display: flex; gap: 6px; margin-top: 8px; }
-.comment-form input { flex: 1; padding: 8px 12px; border-radius: 8px; background: #0A0A1A; border: 1px solid rgba(0, 255, 255, 0.3); color: #fff; font-size: 13px; outline: none; }
-.comment-form input:focus { border-color: #00FFFF; }
-.comment-form button { padding: 8px 14px; border-radius: 8px; background: #00FFFF; border: none; color: #0A0A1A; font-weight: 700; cursor: pointer; font-size: 13px; }
+.db-image img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+}
 
-.loading { text-align: center; padding: 40px; color: #00FFFF; }
-.empty { text-align: center; padding: 60px 20px; color: #606060; }
-.empty-icon { font-size: 60px; margin-bottom: 12px; }
+.db-image-placeholder {
+  width: 100%; height: 100%; position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 48px; 
+  background: linear-gradient(135deg, rgba(255,0,255,0.4), rgba(0,255,255,0.4));
+}
 
-#viewer { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.95); display: none; align-items: center; justify-content: center; z-index: 1000; }
-#viewer img { max-width: 90%; max-height: 90%; }
-#viewer .close { position: absolute; top: 20px; right: 20px; width: 48px; height: 48px; border-radius: 50%; background: rgba(255, 0, 255, 0.8); border: none; color: #fff; font-size: 24px; cursor: pointer; }
+.db-title {
+  padding: 12px; font-size: 14px; font-weight: 700; text-align: center;
+  background: #14142B; display: flex; align-items: center; justify-content: center;
+  min-height: 50px;
+}
+
+.empty { text-align: center; padding: 60px 20px; color: #606060; grid-column: 1 / -1; }
 </style>
 </head>
 <body>
 
 <div class="header">
-  <button class="back-btn" onclick="goBack()">←</button>
-  <div class="header-title">
-    <h1 id="db-name">База Документов</h1>
-    <p id="db-role">—</p>
-  </div>
+  <a href="index.html" class="logo-wrap">
+    <img src="logo_zenit.png" alt="ZENIT" class="logo-img" onerror="this.style.display='none'">
+    <div class="logo-text">
+      <h1>ZENIT</h1>
+      <p id="header-role">Загрузка...</p>
+    </div>
+  </a>
+  <a href="tasks.html" class="header-btn" title="Мой Чек-лист">✅</a>
+  <button class="header-btn pink" onclick="logout()" title="Выйти">🚪</button>
 </div>
 
 <div class="container">
+  <a href="profile.html" class="user-card">
+    <div class="user-name" id="user-name">Загрузка...</div>
+    <div class="user-profile-link">Профиль →</div>
+  </a>
+
   <div class="search-bar">
-    <input type="text" class="search-input" id="search-input" placeholder="🔍 Поиск по постам..." oninput="filterPosts()">
+    <input type="text" class="search-input" id="search-input" placeholder="🔍 Поиск раздела..." oninput="filterItems()">
   </div>
 
-  <div class="composer" id="composer" style="display:none;">
-    <div class="composer-title">✏️ Создать пост</div>
-    <input type="text" id="post-title" placeholder="Заголовок">
-    <textarea id="post-content" placeholder="Текст поста..."></textarea>
-    <div class="composer-actions">
-      <button class="file-btn" id="file-btn" onclick="document.getElementById('file-input').click()">📎 Файл</button>
-      <button class="file-btn" id="image-btn" onclick="document.getElementById('image-input').click()">🖼 Фото</button>
-      <button class="post-btn" id="submit-btn" onclick="submitPost()">Опубликовать</button>
-    </div>
-    <input type="file" id="file-input" style="display:none;" onchange="onFileSelected(this, 'file')">
-    <input type="file" id="image-input" accept="image/*" style="display:none;" onchange="onFileSelected(this, 'image')">
-  </div>
-
-  <div id="posts-container">
-    <div class="loading">Загрузка...</div>
-  </div>
-</div>
-
-<div id="viewer" onclick="this.style.display='none'">
-  <button class="close" onclick="document.getElementById('viewer').style.display='none'">×</button>
-  <img id="viewer-img" src="">
+  <div class="grid" id="grid"></div>
 </div>
 
 <script>
@@ -125,265 +129,78 @@ const SB_URL = 'https://owkizfikhtiqbwftqgfd.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93a2l6ZmlraHRpcWJ3ZnRxZ2ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE0OTYxMDYsImV4cCI6MjEwNzA3MjEwNn0.EHVyXiBYuSJrDVd_k5zAbwqT3ZPFF43p5Uh4_huKoOo';
 window.SB = window.supabase.createClient(SB_URL, SB_KEY);
 
+const ROLE_TITLES = {
+  MANAGER: 'Менеджер', DEPUTY_DIRECTOR: 'Заместитель директора', DIRECTOR: 'Директор',
+  TU: 'ТУ', OD: 'ОД', ID: 'ИД', MODERATOR_ZENIT: 'Модератор Zenit', LEAD_DEV_ZENIT: 'Ведущий разработчик Zenit'
+};
+
 let currentUser = JSON.parse(localStorage.getItem('zenit-user') || 'null');
-let dbName = new URLSearchParams(location.search).get('db') || 'База Документов';
-let selectedFile = null, selectedImage = null, allPosts = [];
+if (!currentUser) { location.href = 'index.html'; }
 
-if (!currentUser) location.href = 'index.html';
+const DB_ITEMS = [
+  // Прямая ссылка на raw-файл с GitHub. Обходит кэш и блокировки.
+  { name: 'Мой Чек-лист', image: 'https://raw.githubusercontent.com/skawarodka05/zenit-web/main/banner_tasks.jpg', link: 'tasks.html', emoji: '✅' },
+  { name: 'База Документов', image: 'banner_docs.jpg', link: 'chat.html?db=База Документов', emoji: '📄' },
+  { name: 'База Продуктов', image: 'banner_products.jpg', link: 'chat.html?db=База Продуктов', emoji: '🛒' },
+  { name: 'База Оборудования', image: 'banner_equipment.jpg', link: 'chat.html?db=База Оборудования', emoji: '⚙️' },
+  { name: 'База Человечков', image: 'banner_people.jpg', link: 'chat.html?db=База Человечков', emoji: '👥' },
+  { name: 'База Контактов', image: 'banner_contacts.jpg', link: 'contacts.html', emoji: '📞' },
+  { name: 'База АУП', image: 'banner_aup.jpg', link: 'chat.html?db=База АУП', emoji: '🏢' },
+  { name: 'База Алхимии', image: 'banner_alchemy.jpg', link: 'chat.html?db=База Алхимии', emoji: '🧪' },
+  { name: 'Почта дня', image: 'banner_mail.jpg', link: 'chat.html?db=Почта дня', emoji: '📧' },
+  { name: 'База SAI Global', image: 'banner_sai.jpg', link: 'sai.html', emoji: '📊' },
+  { name: 'Общение', image: 'banner_communication.jpg', link: 'messenger.html', emoji: '💬' },
+  { name: 'Псевдо диск L', image: 'banner_disk_l.jpg', link: 'disk_l.html', emoji: '💾' },
+  { name: 'База слэнга', image: 'banner_slang.jpg', link: 'slang.html', emoji: '📚' }
+];
 
-document.getElementById('db-name').textContent = dbName;
-document.getElementById('db-role').textContent = currentUser.name + ' · ' + (currentUser.role || '');
+let filteredItems = [...DB_ITEMS];
 
-async function loadPosts() {
-  const container = document.getElementById('posts-container');
-  container.innerHTML = '<div class="loading">Загрузка...</div>';
-  try {
-    const { data, error } = await window.SB.from('posts').select('*').eq('database_name', dbName).order('id', { ascending: false });
-    if (error) throw error;
-    allPosts = data || [];
-    renderPosts(allPosts);
-  } catch (e) {
-    container.innerHTML = '<div class="empty">Ошибка загрузки: ' + e.message + '</div>';
-  }
+function init() {
+  document.getElementById('user-name').textContent = currentUser.name || 'Гость';
+  document.getElementById('header-role').textContent = ROLE_TITLES[currentUser.role] || currentUser.role || '';
+  renderGrid();
 }
 
-function filterPosts() {
-  const q = document.getElementById('search-input').value.toLowerCase().trim();
-  if (!q) { renderPosts(allPosts); return; }
-  const filtered = allPosts.filter(p => (p.title || '').toLowerCase().includes(q) || (p.content || '').toLowerCase().includes(q) || (p.author || '').toLowerCase().includes(q));
-  renderPosts(filtered);
-}
+// Отрисовка через тег <img> с защитой от ошибок (onerror)
+function renderGrid() {
+  const grid = document.getElementById('grid');
 
-async function renderPosts(posts) {
-  const container = document.getElementById('posts-container');
-  if (!posts || posts.length === 0) {
-    container.innerHTML = '<div class="empty"><div class="empty-icon">📄</div><p>Пока нет постов</p></div>';
+  if (filteredItems.length === 0) {
+    grid.innerHTML = '<div class="empty">Ничего не найдено</div>';
     return;
   }
-  container.innerHTML = '';
-  for (const post of posts) {
-    const postEl = await renderPost(post);
-    container.appendChild(postEl);
-  }
-}
 
-async function renderPost(post) {
-  const el = document.createElement('div');
-  el.className = 'post';
-  const isMine = post.author === currentUser.name;
-  const initial = post.author ? post.author.charAt(0).toUpperCase() : '?';
-  const avatarUrl = post.author_avatar || '';
-  const avatarInner = avatarUrl ? `<img src="${escapeAttr(avatarUrl)}" alt="">` : initial;
-  const authorLink = `profile.html?user=${encodeURIComponent(post.author)}`;
+  grid.innerHTML = filteredItems.map(item => {
+    const imgHtml = item.image 
+      ? `<div class="db-image">
+           <img src="${item.image}" alt="${item.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+           <div class="db-image-placeholder" style="display:none;">${item.emoji}</div>
+         </div>`
+      : `<div class="db-image"><div class="db-image-placeholder">${item.emoji}</div></div>`;
 
-  el.innerHTML = `
-    <div class="post-header">
-      <div class="post-avatar" onclick="location.href='${authorLink}'">${avatarInner}</div>
-      <div class="post-author" onclick="location.href='${authorLink}'">
-        <div class="post-author-name">${escapeHtml(post.author)}</div>
-        <div class="post-author-role">${escapeHtml(post.role || '')}</div>
-      </div>
-      ${isMine ? `<button class="post-delete" onclick="deletePost(${post.id})">🗑</button>` : ''}
-    </div>
-    <div class="post-title">${escapeHtml(post.title)}</div>
-    <div class="post-content">${escapeHtml(post.content)}</div>
-    ${post.image_url ? `<img class="post-image" src="${post.image_url}" onclick="viewImage('${escapeAttr(post.image_url)}')">` : ''}
-    ${post.file_url ? `<a class="post-file" href="${escapeAttr(post.file_url)}" target="_blank">📎 Скачать вложение</a>` : ''}
-    
-    <div id="reactions-${post.id}"></div>
-    
-    <div class="comments-toggle" onclick="toggleComments(${post.id})">💬 Обсуждение <span id="comments-count-${post.id}"></span></div>
-    <div class="comments-list hidden" id="comments-${post.id}">
-      <div id="comments-content-${post.id}"></div>
-      <div class="comment-form">
-        <input type="text" id="comment-input-${post.id}" placeholder="Комментарий...">
-        <button onclick="addComment(${post.id})">→</button>
-      </div>
-    </div>
-  `;
-
-  setTimeout(async () => {
-    const rHtml = await renderReactionsHtml(post.id);
-    const rCont = document.getElementById(`reactions-${post.id}`);
-    if(rCont) rCont.innerHTML = rHtml;
-  }, 0);
-
-  loadCommentsCount(post.id);
-  return el;
-}
-
-// ========== РЕАКЦИИ (С ОБРАБОТКОЙ ОШИБОК) ==========
-async function loadReactions(postId) {
-  const { data, error } = await window.SB.from('reactions').select('*').eq('post_id', postId);
-  if (error) { console.error(error); return []; }
-  return data || [];
-}
-
-async function toggleReaction(postId, emoji, event) {
-  if(event) event.stopPropagation();
-  const userName = currentUser.name;
-  
-  try {
-    const { data: existing, error: selectError } = await window.SB.from('reactions')
-      .select('*').eq('post_id', postId).eq('user_name', userName).eq('emoji', emoji);
-
-    if (selectError) throw selectError;
-
-    if (existing && existing.length > 0) {
-      const { error: delError } = await window.SB.from('reactions')
-        .delete().eq('post_id', postId).eq('user_name', userName).eq('emoji', emoji);
-      if (delError) throw delError;
-    } else {
-      const { error: insError } = await window.SB.from('reactions')
-        .insert({ post_id: postId, user_name: userName, emoji: emoji });
-      if (insError) throw insError;
-    }
-    
-    const newHtml = await renderReactionsHtml(postId);
-    const container = document.getElementById(`reactions-${postId}`);
-    if (container) container.innerHTML = newHtml;
-  } catch (error) {
-    console.error("Ошибка реакции:", error);
-    alert("Не удалось поставить реакцию:\n" + error.message);
-  }
-}
-
-async function renderReactionsHtml(postId) {
-  const reactions = await loadReactions(postId);
-  const emojis = ['👍', '❤️', '🔥'];
-  const userName = currentUser.name;
-  let html = '<div class="reactions-row">';
-  
-  emojis.forEach(emoji => {
-    const count = reactions.filter(r => r.emoji === emoji).length;
-    const isMine = reactions.some(r => r.emoji === emoji && r.user_name === userName);
-    html += `<button class="reaction-btn ${isMine ? 'active' : ''}" onclick="toggleReaction(${postId}, '${emoji}', event)">
-      <span>${emoji}</span>${count > 0 ? `<span>${count}</span>` : ''}
-    </button>`;
-  });
-  html += '</div>';
-  return html;
-}
-
-// ========== ОСТАЛЬНОЕ ==========
-document.getElementById('composer').style.display = 'block';
-
-function onFileSelected(input, type) {
-  const file = input.files[0];
-  if (!file) return;
-  if (type === 'file') { selectedFile = file; document.getElementById('file-btn').textContent = '📎 ' + file.name.slice(0, 15); document.getElementById('file-btn').classList.add('active'); } 
-  else { selectedImage = file; document.getElementById('image-btn').textContent = '🖼 ' + file.name.slice(0, 15); document.getElementById('image-btn').classList.add('active'); }
-}
-
-async function uploadFile(file, bucket) {
-  const fileName = 'web_' + Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-  const { data, error } = await window.SB.storage.from(bucket).upload(fileName, file);
-  if (error) throw error;
-  const { data: urlData } = window.SB.storage.from(bucket).getPublicUrl(fileName);
-  return urlData.publicUrl;
-}
-
-async function submitPost() {
-  const title = document.getElementById('post-title').value.trim();
-  const content = document.getElementById('post-content').value.trim();
-  const btn = document.getElementById('submit-btn');
-  if (!title || !content) { alert('Заполните все поля'); return; }
-
-  btn.disabled = true; btn.textContent = 'Публикация...';
-  try {
-    let fileUrl = null, imageUrl = null;
-    if (selectedFile) fileUrl = await uploadFile(selectedFile, 'attachments');
-    if (selectedImage) imageUrl = await uploadFile(selectedImage, 'images');
-
-    const { error } = await window.SB.from('posts').insert({
-      database_name: dbName, title: title, content: content, author: currentUser.name, role: currentUser.role,
-      author_avatar: currentUser.avatar_url || '', has_file: !!fileUrl, has_image: !!imageUrl, file_url: fileUrl, image_url: imageUrl
-    });
-    if (error) throw error;
-
-    document.getElementById('post-title').value = '';
-    document.getElementById('post-content').value = '';
-    document.getElementById('file-btn').textContent = '📎 Файл'; document.getElementById('file-btn').classList.remove('active');
-    document.getElementById('image-btn').textContent = '🖼 Фото'; document.getElementById('image-btn').classList.remove('active');
-    selectedFile = null; selectedImage = null;
-    loadPosts();
-  } catch (e) { alert('Ошибка: ' + e.message); } 
-  finally { btn.disabled = false; btn.textContent = 'Опубликовать'; }
-}
-
-async function deletePost(postId) {
-  if (!confirm('Удалить пост?')) return;
-  await window.SB.from('posts').delete().eq('id', postId);
-  loadPosts();
-}
-
-async function loadCommentsCount(postId) {
-  const { count } = await window.SB.from('comments').select('*', { count: 'exact', head: true }).eq('post_id', postId);
-  const el = document.getElementById('comments-count-' + postId);
-  if (el && count > 0) el.textContent = '(' + count + ')';
-}
-
-async function toggleComments(postId) {
-  const list = document.getElementById('comments-' + postId);
-  if (!list.classList.contains('hidden')) { list.classList.add('hidden'); return; }
-  list.classList.remove('hidden');
-  loadComments(postId);
-}
-
-async function loadComments(postId) {
-  const container = document.getElementById('comments-content-' + postId);
-  container.innerHTML = '<div style="color:#606060; font-size:12px; padding:6px;">Загрузка...</div>';
-  const { data, error } = await window.SB.from('comments').select('*').eq('post_id', postId).order('id', { ascending: true });
-
-  if (error) { container.innerHTML = '<div style="color:#FF00FF; font-size:12px;">Ошибка</div>'; return; }
-  if (!data || data.length === 0) { container.innerHTML = '<div style="color:#606060; font-size:12px; padding:6px;">Нет комментариев</div>'; return; }
-
-  container.innerHTML = data.map(c => {
-    const initial = c.author ? c.author.charAt(0).toUpperCase() : '?';
-    const avatarInner = c.author_avatar ? `<img src="${escapeAttr(c.author_avatar)}" alt="">` : initial;
-    const authorLink = `profile.html?user=${encodeURIComponent(c.author)}`;
     return `
-      <div class="comment">
-        <div class="comment-avatar" onclick="location.href='${authorLink}'">${avatarInner}</div>
-        <div style="flex:1; margin-left:8px;">
-          <div class="comment-author" onclick="location.href='${authorLink}'">${escapeHtml(c.author)}</div>
-          <div class="comment-text">${escapeHtml(c.text)}</div>
-        </div>
-        <button class="comment-delete" onclick="deleteComment(${c.id}, ${postId})">🗑</button>
-      </div>
+      <a href="${item.link}" class="db-card">
+        ${imgHtml}
+        <div class="db-title">${item.name}</div>
+      </a>
     `;
   }).join('');
 }
 
-async function addComment(postId) {
-  const input = document.getElementById('comment-input-' + postId);
-  const text = input.value.trim();
-  if (!text) return;
-  const { error } = await window.SB.from('comments').insert({ post_id: postId, author: currentUser.name, role: currentUser.role, author_avatar: currentUser.avatar_url || '', text: text });
-  if (error) { alert('Ошибка: ' + error.message); return; }
-  input.value = '';
-  loadComments(postId); loadCommentsCount(postId);
+function filterItems() {
+  const q = document.getElementById('search-input').value.toLowerCase().trim();
+  filteredItems = q ? DB_ITEMS.filter(item => item.name.toLowerCase().includes(q)) : [...DB_ITEMS];
+  renderGrid();
 }
 
-async function deleteComment(commentId, postId) {
-  if (!confirm('Удалить комментарий?')) return;
-  await window.SB.from('comments').delete().eq('id', commentId);
-  loadComments(postId); loadCommentsCount(postId);
+function logout() {
+  if (!confirm('Выйти из аккаунта?')) return;
+  localStorage.removeItem('zenit-user');
+  location.href = 'index.html';
 }
 
-function viewImage(url) { document.getElementById('viewer-img').src = url; document.getElementById('viewer').style.display = 'flex'; }
-function goBack() { history.back(); }
-
-function escapeHtml(text) {
-  if (!text) return '';
-  return String(text).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
-}
-function escapeAttr(text) {
-  if (!text) return '';
-  return String(text).replace(/"/g, '&quot;').replace(/'/g, "\\'");
-}
-
-loadPosts();
+init();
 </script>
 </body>
 </html>

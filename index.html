@@ -51,6 +51,7 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; padding-bottom: 40px
     </div>
   </a>
   <a href="tasks.html" class="header-btn" title="Мой Чек-лист">✅</a>
+  <!-- Кнопка выхода ведет на страницу авторизации -->
   <button class="header-btn pink" onclick="logout()" title="Выйти">🚪</button>
 </div>
 
@@ -70,21 +71,26 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; padding-bottom: 40px
 <script>
 const SB_URL = 'https://owkizfikhtiqbwftqgfd.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93a2l6ZmlraHRpcWJ3ZnRxZ2ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE0OTYxMDYsImV4cCI6MjEwNzA3MjEwNn0.EHVyXiBYuSJrDVd_k5zAbwqT3ZPFF43p5Uh4_huKoOo';
-window.SB = window.supabase.createClient(SB_URL, SB_KEY);
+// Инициализируем Supabase с защитой от блокировки CDN
+let SB = null;
+try { SB = window.supabase.createClient(SB_URL, SB_KEY); } catch(e) { console.error("Ошибка загрузки Supabase"); }
 
 const ROLE_TITLES = {
   MANAGER: 'Менеджер', DEPUTY_DIRECTOR: 'Заместитель директора', DIRECTOR: 'Директор',
   TU: 'ТУ', OD: 'ОД', ID: 'ИД', MODERATOR_ZENIT: 'Модератор Zenit', LEAD_DEV_ZENIT: 'Ведущий разработчик Zenit'
 };
 
-let currentUser = JSON.parse(localStorage.getItem('zenit-user') || 'null');
-
-// 🛑 ИСПРАВЛЕНИЕ ПЕТЛИ: Если нет пользователя, кидаем на страницу входа (а не на главную)
-if (!currentUser) { 
-    // Если твоя страница входа называется иначе (например, auth.html), поменяй название ниже!
-    location.href = 'register.html'; 
+// 🛡 БЕЗОПАСНОЕ ЧТЕНИЕ ПРОФИЛЯ (чтобы страница не зависала при ошибке)
+let currentUser = null;
+try {
+    const raw = localStorage.getItem('zenit-user');
+    if (raw) currentUser = JSON.parse(raw);
+} catch (e) {
+    console.error("Битые данные в кэше. Очищаем...");
+    localStorage.removeItem('zenit-user');
 }
 
+// Список карточек
 const DB_ITEMS = [
   { name: 'Мой Чек-лист', image: 'https://raw.githubusercontent.com/skawarodka05/zenit-web/main/banner_tasks.jpg', link: 'tasks.html', emoji: '✅' },
   { name: 'База Документов', image: 'banner_docs.jpg', link: 'chat.html?db=База Документов', emoji: '📄' },
@@ -104,21 +110,29 @@ const DB_ITEMS = [
 let filteredItems = [...DB_ITEMS];
 
 function init() {
+  // Заполняем шапку
   if (currentUser) {
     document.getElementById('user-name').textContent = currentUser.name || 'Гость';
     document.getElementById('header-role').textContent = ROLE_TITLES[currentUser.role] || currentUser.role || '';
+  } else {
+    document.getElementById('user-name').textContent = 'Гость';
+    document.getElementById('header-role').textContent = 'Нажмите для входа';
   }
+  // Рисуем карточки
   renderGrid();
 }
 
 function renderGrid() {
   const grid = document.getElementById('grid');
+  if (!grid) return; // Защита, если элемента нет
+
   if (filteredItems.length === 0) {
     grid.innerHTML = '<div class="empty">Ничего не найдено</div>';
     return;
   }
 
   grid.innerHTML = filteredItems.map(item => {
+    // Если картинка не загрузится, включится onerror и покажется эмодзи
     const imgHtml = item.image 
       ? `<div class="db-image">
            <img src="${item.image}" alt="${item.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
@@ -136,7 +150,9 @@ function renderGrid() {
 }
 
 function filterItems() {
-  const q = document.getElementById('search-input').value.toLowerCase().trim();
+  const searchInput = document.getElementById('search-input');
+  if (!searchInput) return;
+  const q = searchInput.value.toLowerCase().trim();
   filteredItems = q ? DB_ITEMS.filter(item => item.name.toLowerCase().includes(q)) : [...DB_ITEMS];
   renderGrid();
 }
@@ -144,11 +160,11 @@ function filterItems() {
 function logout() {
   if (!confirm('Выйти из аккаунта?')) return;
   localStorage.removeItem('zenit-user');
-  // 🛑 Тут тоже меняем редирект, чтобы не было петли
-  location.href = 'register.html'; 
+  location.href = 'register.html'; // Укажи тут название своей страницы входа (например, login.html)
 }
 
-init();
+// Запускаем всё, когда страница прогрузится
+document.addEventListener('DOMContentLoaded', init);
 </script>
 </body>
 </html>

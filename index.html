@@ -54,7 +54,6 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; }
 </div>
 
 <div class="container">
-  <!-- Клик по этой карточке ведет либо в профиль, либо на вход -->
   <a href="#" id="profile-link" class="user-card">
     <div class="user-name" id="user-name">Гость</div>
     <div class="user-profile-link" id="profile-action">Войти →</div>
@@ -89,7 +88,6 @@ const DB_ITEMS = [
   { name: 'База слэнга', image: 'banner_slang.jpg', link: 'slang.html', emoji: '📚' }
 ];
 
-// Безопасное получение пользователя
 function getUser() {
     try {
         const raw = localStorage.getItem('zenit-user');
@@ -98,7 +96,6 @@ function getUser() {
     } catch(e) { return null; }
 }
 
-// Отрисовка сетки
 function drawGrid(items) {
     const grid = document.getElementById('grid');
     if (!grid) return;
@@ -118,7 +115,6 @@ function drawGrid(items) {
     grid.innerHTML = html;
 }
 
-// Запуск при загрузке страницы
 document.addEventListener('DOMContentLoaded', () => {
     const user = getUser();
     const userNameEl = document.getElementById('user-name');
@@ -127,23 +123,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const profileAction = document.getElementById('profile-action');
 
     if (user && user.name) {
-        // ЕСЛИ АВТОРИЗОВАН
         userNameEl.textContent = user.name;
         headerRoleEl.textContent = ROLE_TITLES[user.role] || user.role || 'Сотрудник';
-        profileLink.href = 'profile.html'; // Ведем в свой профиль
+        profileLink.href = 'profile.html';
         profileAction.textContent = 'Профиль →';
     } else {
-        // ЕСЛИ ГОСТЬ
         userNameEl.textContent = 'Гость';
         headerRoleEl.textContent = 'Требуется вход';
-        profileLink.href = 'login.html'; // Ведем на страницу входа
+        profileLink.href = 'login.html';
         profileAction.textContent = 'Войти →';
     }
 
-    // Рисуем карточки
     drawGrid(DB_ITEMS);
 
-    // Поиск
     document.getElementById('search-input').addEventListener('input', (e) => {
         const q = e.target.value.toLowerCase().trim();
         const filtered = q ? DB_ITEMS.filter(i => i.name.toLowerCase().includes(q)) : DB_ITEMS;
@@ -151,11 +143,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-// Выход
+// 🚪 ИСПРАВЛЕННАЯ ФУНКЦИЯ ВЫХОДА
 function logout() {
     if (confirm('Выйти из аккаунта?')) {
-        localStorage.removeItem('zenit-user');
-        location.reload(); // Просто перезагружаем страницу, чтобы она стала "Гостем"
+        localStorage.removeItem('zenit-user'); // Удаляем данные
+        location.href = 'login.html';          // Перекидываем на страницу входа!
     }
 }
 </script>

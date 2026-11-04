@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>ZENIT · Мой Чек-лист</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+body { background: #0A0A1A; color: #fff; min-height: 100vh; }
+
+.header { display: flex; align-items: center; gap: 12px; padding: 16px; background: #14142B; border-bottom: 1px solid rgba(0, 255, 255, 0.3); position: sticky; top: 0; z-index: 100; }
+.back-btn { width: 42px; height: 42px; border-radius: 12px; background: #0A0A1A; border: 1px solid rgba(0, 255, 255, 0.5); color: #00FFFF; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.header-title { flex: 1; }
+.header-title h1 { font-size: 18px; font-weight: 700; }
+.header-title p { font-size: 12px; color: #00FFFF; margin-top: 2px; }
+
+.container { max-width: 600px; margin: 0 auto; padding: 16px 16px 100px; }
+
+/* Фильтры */
+.filters { display: flex; gap: 8px; margin-bottom: 16px; overflow-x: auto; }
+.filter-chip { padding: 8px 16px; border-radius: 20px; background: #14142B; border: 1px solid rgba(0, 255, 255, 0.4); color: #B0B0C0; cursor: pointer; font-size: 13px; font-weight: 600; white-space: nowrap; }
+.filter-chip.active { background: rgba(255, 0, 255, 0.2); border-color: #FF00FF; color: #FF00FF; }
+
+/* Список задач */
+.task-list { display: flex; flex-direction: column; gap: 10px; }
+
+.task-card {
+  display: flex; align-items: flex-start; gap: 12px;
+  background: #14142B; border: 1px solid rgba(0, 255, 255, 0.3);
+  border-radius: 12px; padding: 14px; transition: all 0.2s;
+}
+.task-card.done { opacity: 0.6; border-color: rgba(0, 255, 255, 0.1); }
+
+/* Чекбокс */
+.task-checkbox {
+  width: 24px; height: 24px; border-radius: 6px;
+  border: 2px solid #00FFFF; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; margin-top: 2px; transition: all 0.2s;
+}
+.task-checkbox.checked { background: #00FFFF; border-color: #00FFFF; }
+.task-checkbox.checked::after { content: '✓'; color: #0A0A1A; font-weight: 900; font-size: 16px; }
+
+.task-content { flex: 1; min-width: 0; }
+.task-title { font-size: 15px; font-weight: 700; margin-bottom: 4px; transition: all 0.2s; }
+.task-card.done .task-title { text-decoration: line-through; color: #606060; }
+.task-desc { font-size: 13px; color: #B0B0C0; margin-bottom: 6px; }
+.task-meta { display: flex; gap: 10px; font-size: 11px; flex-wrap: wrap; }
+.priority-high { color: #FF4444; font-weight: 700; }
+.priority-medium { color: #FFD700; }
+.priority-low { color: #00FF88; }
+
+.task-delete { background: transparent; border: none; color: #606060; cursor: pointer; font-size: 18px; padding: 4px; }
+.task-delete:hover { color: #FF00FF; }
+
+/* FAB */
+.fab {
+  position: fixed; bottom: 24px; right: 24px;
+  padding: 16px 24px; border: none; border-radius: 50px;
+  background: linear-gradient(90deg, #FF00FF, #00FFFF);
+  color: #fff; font-size: 15px; font-weight: 700;
+  cursor: pointer; box-shadow: 0 0 25px rgba(0, 255, 255, 0.5);
+  display: flex; align-items: center; gap: 8px;
+}
+
+/* Модалка */
+.modal-bg { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.8); display: none; align-items: center; justify-content: center; z-index: 500; padding: 20px; }
+.modal-bg.show { display: flex; }
+.modal { background: #14142B; border: 1px solid rgba(0, 255, 255, 0.4); border-radius: 16px; padding: 24px; max-width: 400px; width: 100%; }
+.modal-title { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
+
+.form-group { margin-bottom: 14px; }
+.form-label { display: block; font-size: 12px; color: #B0B0C0; margin-bottom: 6px; font-weight: 600; }
+.form-input, .form-select, .form-textarea { width: 100%; padding: 12px 14px; border-radius: 10px; background: #0A0A1A; border: 1px solid rgba(0, 255, 255, 0.4); color: #fff; font-size: 14px; outline: none; font-family: inherit; }
+.form-input:focus, .form-select:focus, .form-textarea:focus { border-color: #00FFFF; }
+
+.modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+.modal-btn { flex: 1; padding: 14px; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; border: none; }
+.modal-btn.save { background: linear-gradient(90deg, #FF00FF, #00FFFF); color: #fff; }
+.modal-btn.cancel { background: transparent; border: 1px solid #606060; color: #B0B0C0; }
+
+.empty { text-align: center; padding: 60px 20px; color: #606060; }
+.loading { text-align: center; padding: 40px; color: #00FFFF; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <button class="back-btn" onclick="location.href='index.html'">←</button>
+  <div class="header-title">
+    <h1>Мой Чек-лист</h1>
+    <p id="subtitle">Загрузка...</p>
+  </div>
+</div>
+
+<div class="container">
+  <div class="filters">
+    <div class="filter-chip active" onclick="setFilter('all')">Активные</div>
+    <div class="filter-chip" onclick="setFilter('done')">Выполненные</div>
+  </div>
+
+  <div class="task-list" id="task-list">
+    <div class="loading">Загрузка...</div>
+  </div>
+</div>
+
+<button class="fab" onclick="openModal()">
+  ➕ Добавить
+</button>
+
+<div class="modal-bg" id="modal">
+  <div class="modal">
+    <div class="modal-title">Новая задача</div>
+    
+    <div class="form-group">
+      <label class="form-label">Что нужно сделать? *</label>
+      <input type="text" class="form-input" id="task-title" placeholder="Например: Купить хлеб">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Детали (необязательно)</label>
+      <textarea class="form-textarea" id="task-desc" placeholder="..." rows="2"></textarea>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Приоритет</label>
+      <select class="form-select" id="task-priority">
+        <option value="low">🟢 Низкий</option>
+        <option value="medium" selected>🟡 Средний</option>
+        <option value="high">🔴 Высокий</option>
+      </select>
+    </div>
+
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="closeModal()">Отмена</button>
+      <button class="modal-btn save" onclick="saveTask()">Создать</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SB_URL = 'https://owkizfikhtiqbwftqgfd.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93a2l6ZmlraHRpcWJ3ZnRxZ2ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE0OTYxMDYsImV4cCI6MjEwNzA3MjEwNn0.EHVyXiBYuSJrDVd_k5zAbwqT3ZPFF43p5Uh4_huKoOo';
+window.SB = window.supabase.createClient(SB_URL, SB_KEY);
+
+let currentUser = JSON.parse(localStorage.getItem('zenit-user') || 'null');
+if (!currentUser) location.href = 'index.html';
+
+let allTasks = [];
+let currentFilter = 'all';
+
+document.getElementById('subtitle').textContent = currentUser.name;
+
+async function loadTasks() {
+  try {
+    // ГРУЗИМ ТОЛЬКО ЗАДАЧИ ТЕКУЩЕГО ПОЛЬЗОВАТЕЛЯ
+    const { data, error } = await window.SB
+      .from('tasks')
+      .select('*')
+      .eq('user_email', currentUser.email) 
+      .order('created_at', { ascending: false });
+      
+    if (error) throw error;
+    allTasks = data || [];
+    renderTasks();
+  } catch (e) {
+    document.getElementById('task-list').innerHTML = '<div class="empty">Ошибка: ' + e.message + '</div>';
+  }
+}
+
+function setFilter(filter) {
+  currentFilter = filter;
+  document.querySelectorAll('.filter-chip').forEach(el => {
+    el.classList.toggle('active', el.textContent.trim() === (filter === 'all' ? 'Активные' : 'Выполненные'));
+  });
+  renderTasks();
+}
+
+function renderTasks() {
+  let filtered = allTasks;
+  if (currentFilter === 'done') filtered = filtered.filter(t => t.is_completed);
+  else filtered = filtered.filter(t => !t.is_completed); // "Активные" по умолчанию
+
+  const container = document.getElementById('task-list');
+
+  if (filtered.length === 0) {
+    container.innerHTML = `<div class="empty">${currentFilter === 'all' ? 'Все сделано! 🎉' : 'Нет выполненных задач'}</div>`;
+    return;
+  }
+
+  container.innerHTML = filtered.map(t => {
+    const priorityText = t.priority === 'high' ? '🔴 Высокий' : t.priority === 'low' ? '🟢 Низкий' : '🟡 Средний';
+    const priorityClass = 'priority-' + (t.priority || 'medium');
+    
+    return `
+      <div class="task-card ${t.is_completed ? 'done' : ''}">
+        <div class="task-checkbox ${t.is_completed ? 'checked' : ''}" onclick="toggleTask(${t.id}, ${t.is_completed})"></div>
+        <div class="task-content">
+          <div class="task-title">${escapeHtml(t.title)}</div>
+          ${t.description ? `<div class="task-desc">${escapeHtml(t.description)}</div>` : ''}
+          <div class="task-meta">
+            <span class="${priorityClass}">${priorityText}</span>
+          </div>
+        </div>
+        <button class="task-delete" onclick="deleteTask(${t.id})">🗑</button>
+      </div>
+    `;
+  }).join('');
+}
+
+async function toggleTask(id, currentStatus) {
+  await window.SB.from('tasks').update({ is_completed: !currentStatus }).eq('id', id);
+  loadTasks();
+}
+
+async function deleteTask(id) {
+  if (!confirm('Удалить задачу?')) return;
+  await window.SB.from('tasks').delete().eq('id', id);
+  loadTasks();
+}
+
+function openModal() {
+  document.getElementById('task-title').value = '';
+  document.getElementById('task-desc').value = '';
+  document.getElementById('task-priority').value = 'medium';
+  document.getElementById('modal').classList.add('show');
+  document.getElementById('task-title').focus();
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('show');
+}
+
+async function saveTask() {
+  const title = document.getElementById('task-title').value.trim();
+  const description = document.getElementById('task-desc').value.trim();
+  const priority = document.getElementById('task-priority').value;
+
+  if (!title) { alert('Введите задачу'); return; }
+
+  // СОХРАНЯЕМ С ПРИВЯЗКОЙ К EMAIL
+  const { error } = await window.SB.from('tasks').insert({
+    user_email: currentUser.email,
+    title: title, 
+    description: description, 
+    priority: priority,
+    is_completed: false
+  });
+
+  if (error) { alert('Ошибка: ' + error.message); return; }
+
+  closeModal();
+  loadTasks();
+}
+
+function escapeHtml(text) {
+  if (!text) return '';
+  return String(text).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
+}
+
+loadTasks();
+</script>
+</body>
+</html>

@@ -2,20 +2,19 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<!-- 🛑 ЗАПРЕТ КЭШИРОВАНИЯ -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
-<!-- ------------------- -->
-
-<!-- 🖼 ИКОНКА САЙТА (FAVICON) -->
 <link rel="icon" type="image/png" href="logo_zenit.png?v=1">
-
 <title>ZENIT · Главная</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
 body { background: #0A0A1A; color: #fff; min-height: 100vh; }
+
+/* Стили для скроллбара */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #0A0A1A; }
+::-webkit-scrollbar-thumb { background: #00FFFF; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #FF00FF; }
 
 .header { display: flex; align-items: center; gap: 12px; padding: 16px; background: #14142B; border-bottom: 1px solid rgba(0, 255, 255, 0.3); position: sticky; top: 0; z-index: 100; }
 .logo-wrap { display: flex; align-items: center; gap: 12px; flex: 1; text-decoration: none; color: inherit; }
@@ -37,58 +36,33 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; }
 .search-input { width: 100%; padding: 14px 18px; border-radius: 12px; background: #14142B; border: 1px solid rgba(0, 255, 255, 0.5); color: #fff; font-size: 15px; outline: none; transition: all 0.2s; }
 .search-input:focus { border-color: #00FFFF; box-shadow: 0 0 12px rgba(0, 255, 255, 0.3); }
 
-/* 📐 СЕТКА КАРТОЧЕК */
-.grid { 
-    display: grid; 
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); 
-    gap: 16px; 
-}
-.db-card { 
-    background: #14142B; 
-    border: 1px solid rgba(0, 255, 255, 0.5); 
-    border-radius: 14px; 
-    overflow: hidden; 
-    text-decoration: none; 
-    color: #fff; 
-    display: flex; 
-    flex-direction: column; 
-    transition: all 0.2s; 
-}
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+.db-card { background: #14142B; border: 1px solid rgba(0, 255, 255, 0.5); border-radius: 14px; overflow: hidden; text-decoration: none; color: #fff; display: flex; flex-direction: column; transition: all 0.2s; }
 .db-card:hover { border-color: #00FFFF; box-shadow: 0 0 15px rgba(0, 255, 255, 0.2); transform: translateY(-2px); }
 
-/* 📸 УВЕЛИЧЕННЫЙ БАННЕР ПОД ВЕРТИКАЛЬНУЮ КАРТИНКУ */
-.db-image { 
-    width: 100%; 
-    height: 280px; 
-    border-bottom: 1px solid rgba(0, 255, 255, 0.3); 
-    position: relative; 
-    background: #0A0A1A; 
-    overflow: hidden;
-}
-.db-image img { 
-    width: 100%; 
-    height: 100%; 
-    object-fit: cover; 
-    object-position: top center; /* Показывает верхнюю часть картинки (лицо) */
-    display: block; 
-}
+.db-image { width: 100%; height: 280px; border-bottom: 1px solid rgba(0, 255, 255, 0.3); position: relative; background: #0A0A1A; overflow: hidden; }
+.db-image img { width: 100%; height: 100%; object-fit: cover; object-position: top center; display: block; }
 .db-image-placeholder { width: 100%; height: 100%; position: absolute; top: 0; left: 0; display: flex; align-items: center; justify-content: center; font-size: 56px; background: linear-gradient(135deg, rgba(255,0,255,0.4), rgba(0,255,255,0.4)); }
 
-/* 🔤 ТЕКСТ */
-.db-title { 
-    padding: 16px 12px; 
-    font-size: 16px; 
-    font-weight: 700; 
-    text-align: center; 
-    flex-grow: 1;
-    display: flex; 
-    align-items: center; 
-    justify-content: center;
-}
+.db-title { padding: 16px 12px; font-size: 16px; font-weight: 700; text-align: center; flex-grow: 1; display: flex; align-items: center; justify-content: center; }
 .empty { text-align: center; padding: 60px 20px; color: #606060; grid-column: 1 / -1; }
+
+/* 🔔 СТИЛИ ДЛЯ TOAST-УВЕДОМЛЕНИЙ */
+#toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+.toast { 
+    background: #14142B; color: #fff; padding: 16px 20px; border-radius: 12px; 
+    border-left: 4px solid #00FFFF; box-shadow: 0 5px 15px rgba(0,0,0,0.5); 
+    font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 10px;
+    transform: translateX(120%); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.toast.show { transform: translateX(0); }
+.toast.error { border-left-color: #FF00FF; }
 </style>
 </head>
 <body>
+
+<!-- Контейнер для уведомлений -->
+<div id="toast-container"></div>
 
 <div class="header">
   <a href="index.html" class="logo-wrap">
@@ -116,10 +90,7 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; }
 </div>
 
 <script>
-const ROLE_TITLES = {
-  MANAGER: 'Менеджер', DEPUTY_DIRECTOR: 'Заместитель директора', DIRECTOR: 'Директор',
-  TU: 'ТУ', OD: 'ОД', ID: 'ИД', MODERATOR_ZENIT: 'Модератор Zenit', LEAD_DEV_ZENIT: 'Ведущий разработчик Zenit'
-};
+const ROLE_TITLES = { MANAGER: 'Менеджер', DEPUTY_DIRECTOR: 'Заместитель директора', DIRECTOR: 'Директор', TU: 'ТУ', OD: 'ОД', ID: 'ИД', MODERATOR_ZENIT: 'Модератор Zenit', LEAD_DEV_ZENIT: 'Ведущий разработчик Zenit' };
 
 const DB_ITEMS = [
   { name: 'Мой Чек-лист', image: 'https://raw.githubusercontent.com/skawarodka05/zenit-web/main/banner_tasks.jpg', link: 'tasks.html', emoji: '✅' },
@@ -137,6 +108,23 @@ const DB_ITEMS = [
   { name: 'База слэнга', image: 'banner_slang.jpg', link: 'slang.html', emoji: '📚' }
 ];
 
+// 🔔 ФУНКЦИЯ УВЕДОМЛЕНИЙ
+function showToast(message, isError = false) {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = 'toast' + (isError ? ' error' : '');
+    toast.innerHTML = `<span>${isError ? '❌' : '✅'}</span> <span>${message}</span>`;
+    container.appendChild(toast);
+    
+    // Появление
+    setTimeout(() => toast.classList.add('show'), 10);
+    // Исчезновение
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
 function getUser() {
     try {
         const raw = localStorage.getItem('zenit-user');
@@ -148,10 +136,8 @@ function getUser() {
 function drawGrid(items) {
     const grid = document.getElementById('grid');
     if (!grid) return;
-    if (items.length === 0) {
-        grid.innerHTML = '<div class="empty">Ничего не найдено</div>';
-        return;
-    }
+    if (items.length === 0) { grid.innerHTML = '<div class="empty">Ничего не найдено</div>'; return; }
+    
     let html = '';
     items.forEach(item => {
         let imgHtml = item.image 
@@ -164,37 +150,31 @@ function drawGrid(items) {
 
 document.addEventListener('DOMContentLoaded', () => {
     const user = getUser();
-    const userNameEl = document.getElementById('user-name');
-    const headerRoleEl = document.getElementById('header-role');
-    const profileLink = document.getElementById('profile-link');
-    const profileAction = document.getElementById('profile-action');
-
     if (user && user.name) {
-        userNameEl.textContent = user.name;
-        headerRoleEl.textContent = ROLE_TITLES[user.role] || user.role || 'Сотрудник';
-        profileLink.href = 'profile.html';
-        profileAction.textContent = 'Профиль →';
+        document.getElementById('user-name').textContent = user.name;
+        document.getElementById('header-role').textContent = ROLE_TITLES[user.role] || user.role || 'Сотрудник';
+        document.getElementById('profile-link').href = 'profile.html';
+        document.getElementById('profile-action').textContent = 'Профиль →';
     } else {
-        userNameEl.textContent = 'Гость';
-        headerRoleEl.textContent = 'Требуется вход';
-        profileLink.href = 'login.html';
-        profileAction.textContent = 'Войти →';
+        document.getElementById('user-name').textContent = 'Гость';
+        document.getElementById('header-role').textContent = 'Требуется вход';
+        document.getElementById('profile-link').href = 'login.html';
+        document.getElementById('profile-action').textContent = 'Войти →';
     }
 
     drawGrid(DB_ITEMS);
 
     document.getElementById('search-input').addEventListener('input', (e) => {
         const q = e.target.value.toLowerCase().trim();
-        const filtered = q ? DB_ITEMS.filter(i => i.name.toLowerCase().includes(q)) : DB_ITEMS;
-        drawGrid(filtered);
+        drawGrid(q ? DB_ITEMS.filter(i => i.name.toLowerCase().includes(q)) : DB_ITEMS);
     });
 });
 
+// Выход с красивым уведомлением
 function logout() {
-    if (confirm('Выйти из аккаунта?')) {
-        localStorage.removeItem('zenit-user'); 
-        location.href = 'login.html';
-    }
+    localStorage.removeItem('zenit-user'); 
+    showToast('Вы вышли из аккаунта');
+    setTimeout(() => { location.href = 'login.html'; }, 1000); // Даем время увидеть уведомление
 }
 </script>
 </body>

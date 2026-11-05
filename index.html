@@ -7,6 +7,10 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <!-- ------------------- -->
+
+<!-- 🖼 ИКОНКА САЙТА (FAVICON) -->
+<link rel="icon" type="image/png" href="logo_zenit.png?v=1">
+
 <title>ZENIT · Главная</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -55,7 +59,7 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; }
 /* 📸 УВЕЛИЧЕННЫЙ БАННЕР ПОД ВЕРТИКАЛЬНУЮ КАРТИНКУ */
 .db-image { 
     width: 100%; 
-    height: 280px; /* Увеличили высоту, чтобы картинка была почти квадратной */
+    height: 280px; 
     border-bottom: 1px solid rgba(0, 255, 255, 0.3); 
     position: relative; 
     background: #0A0A1A; 
@@ -65,7 +69,7 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; }
     width: 100%; 
     height: 100%; 
     object-fit: cover; 
-    object-position: top center; /* Показывает верхнюю часть картинки (лицо), а не центр */
+    object-position: top center; /* Показывает верхнюю часть картинки (лицо) */
     display: block; 
 }
 .db-image-placeholder { width: 100%; height: 100%; position: absolute; top: 0; left: 0; display: flex; align-items: center; justify-content: center; font-size: 56px; background: linear-gradient(135deg, rgba(255,0,255,0.4), rgba(0,255,255,0.4)); }

@@ -8,13 +8,21 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-body { background: #0A0A1A; color: #fff; min-height: 100vh; }
+body { background: #0A0A1A; color: #fff; min-height: 100vh; overflow-x: hidden; }
+
+/* 🎨 АНИМИРОВАННЫЙ ФОН */
+#wave-bg {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    z-index: -1; pointer-events: none; /* Пропускает клики сквозь себя */
+    opacity: 0.6;
+}
 
 ::-webkit-scrollbar { width: 8px; }
-::-webkit-scrollbar-track { background: #0A0A1A; }
+::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #00FFFF; border-radius: 4px; }
 
-.header { display: flex; align-items: center; gap: 12px; padding: 16px; background: #14142B; border-bottom: 1px solid rgba(0, 255, 255, 0.3); position: sticky; top: 0; z-index: 100; }
+/* Контент поверх фона */
+.header { display: flex; align-items: center; gap: 12px; padding: 16px; background: rgba(20, 20, 43, 0.8); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(0, 255, 255, 0.3); position: sticky; top: 0; z-index: 100; }
 .logo-wrap { display: flex; align-items: center; gap: 12px; flex: 1; text-decoration: none; color: inherit; }
 .logo-img { width: 44px; height: 44px; object-fit: contain; }
 .logo-text h1 { font-size: 22px; font-weight: 900; letter-spacing: 1px; }
@@ -24,18 +32,18 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; }
 .header-btn.pink { border-color: rgba(255, 0, 255, 0.5); color: #FF00FF; }
 .header-btn.pink:hover { background: rgba(255, 0, 255, 0.15); }
 
-.container { max-width: 1100px; margin: 0 auto; padding: 16px; }
-.user-card { background: #14142B; border: 1px solid rgba(255, 0, 255, 0.5); border-radius: 12px; padding: 14px 16px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; text-decoration: none; color: #fff; transition: all 0.2s; }
-.user-card:hover { background: rgba(255, 0, 255, 0.05); }
+.container { max-width: 1100px; margin: 0 auto; padding: 16px; position: relative; z-index: 1; }
+.user-card { background: rgba(20, 20, 43, 0.8); backdrop-filter: blur(5px); border: 1px solid rgba(255, 0, 255, 0.5); border-radius: 12px; padding: 14px 16px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; text-decoration: none; color: #fff; transition: all 0.2s; }
+.user-card:hover { background: rgba(20, 20, 43, 0.95); }
 .user-name { font-size: 16px; font-weight: 700; }
 .user-profile-link { font-size: 13px; color: #00FFFF; font-weight: bold; }
 
 .search-bar { margin-bottom: 24px; }
-.search-input { width: 100%; padding: 14px 18px; border-radius: 12px; background: #14142B; border: 1px solid rgba(0, 255, 255, 0.5); color: #fff; font-size: 15px; outline: none; transition: all 0.2s; }
+.search-input { width: 100%; padding: 14px 18px; border-radius: 12px; background: rgba(20, 20, 43, 0.8); backdrop-filter: blur(5px); border: 1px solid rgba(0, 255, 255, 0.5); color: #fff; font-size: 15px; outline: none; transition: all 0.2s; }
 .search-input:focus { border-color: #00FFFF; box-shadow: 0 0 12px rgba(0, 255, 255, 0.3); }
 
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
-.db-card { background: #14142B; border: 1px solid rgba(0, 255, 255, 0.5); border-radius: 14px; overflow: hidden; text-decoration: none; color: #fff; display: flex; flex-direction: column; transition: all 0.2s; }
+.db-card { background: rgba(20, 20, 43, 0.8); backdrop-filter: blur(5px); border: 1px solid rgba(0, 255, 255, 0.5); border-radius: 14px; overflow: hidden; text-decoration: none; color: #fff; display: flex; flex-direction: column; transition: all 0.2s; }
 .db-card:hover { border-color: #00FFFF; box-shadow: 0 0 15px rgba(0, 255, 255, 0.2); transform: translateY(-2px); }
 
 .db-image { width: 100%; height: 280px; border-bottom: 1px solid rgba(0, 255, 255, 0.3); position: relative; background: #0A0A1A; overflow: hidden; }
@@ -45,18 +53,11 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; }
 .db-title { padding: 16px 12px; font-size: 16px; font-weight: 700; text-align: center; flex-grow: 1; display: flex; align-items: center; justify-content: center; }
 .empty { text-align: center; padding: 60px 20px; color: #606060; grid-column: 1 / -1; }
 
-/* 🔔 СТИЛИ ДЛЯ TOAST-УВЕДОМЛЕНИЙ */
 #toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
-.toast { 
-    background: #14142B; color: #fff; padding: 16px 20px; border-radius: 12px; 
-    border-left: 4px solid #00FFFF; box-shadow: 0 5px 15px rgba(0,0,0,0.5); 
-    font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 10px;
-    transform: translateX(120%); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
+.toast { background: #14142B; color: #fff; padding: 16px 20px; border-radius: 12px; border-left: 4px solid #00FFFF; box-shadow: 0 5px 15px rgba(0,0,0,0.5); font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 10px; transform: translateX(120%); transition: transform 0.3s; }
 .toast.show { transform: translateX(0); }
 .toast.error { border-left-color: #FF00FF; }
 
-/* ⚠️ СТИЛИ ДЛЯ МОДАЛЬНОГО ОКНА ПОДТВЕРЖДЕНИЯ */
 #confirm-modal { position: fixed; inset: 0; background: rgba(10, 10, 26, 0.8); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; z-index: 10000; opacity: 0; transition: opacity 0.2s; }
 #confirm-modal.show { display: flex; opacity: 1; }
 .confirm-box { background: #14142B; border: 1px solid #00FFFF; border-radius: 16px; padding: 24px; max-width: 400px; width: 90%; text-align: center; box-shadow: 0 0 30px rgba(0, 255, 255, 0.2); transform: scale(0.9); transition: transform 0.2s; }
@@ -66,14 +67,14 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; }
 .confirm-actions { display: flex; gap: 10px; }
 .confirm-btn { flex: 1; padding: 14px; border-radius: 12px; border: none; font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
 .confirm-btn.cancel { background: transparent; border: 1px solid #606060; color: #B0B0C0; }
-.confirm-btn.cancel:hover { background: rgba(255, 255, 255, 0.05); }
 .confirm-btn.danger { background: rgba(255, 0, 255, 0.15); border: 1px solid #FF00FF; color: #FF00FF; }
-.confirm-btn.danger:hover { background: rgba(255, 0, 255, 0.25); box-shadow: 0 0 15px rgba(255, 0, 255, 0.4); }
 </style>
 </head>
 <body>
 
-<!-- Контейнеры для кастомных окон -->
+<!-- 🎨 CANVAS ДЛЯ ВОЛН -->
+<canvas id="wave-bg"></canvas>
+
 <div id="toast-container"></div>
 <div id="confirm-modal">
     <div class="confirm-box">
@@ -112,6 +113,59 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; }
 </div>
 
 <script>
+// ==========================================
+// 🌊 АНИМАЦИЯ ВОЛН НА ФОНЕ
+// ==========================================
+const canvas = document.getElementById('wave-bg');
+const ctx = canvas.getContext('2d');
+let width, height;
+
+function resize() {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resize);
+resize();
+
+let time = 0;
+
+function drawWaves() {
+    ctx.clearRect(0, 0, width, height);
+
+    // Рисуем 3 волны с разными параметрами
+    drawWave(0.005, 80, 0.02, 'rgba(0, 255, 255, 0.15)');  // Голубая
+    drawWave(0.008, 60, 0.03, 'rgba(255, 0, 255, 0.1)');   // Розовая
+    drawWave(0.004, 100, 0.015, 'rgba(0, 255, 255, 0.05)'); // Светло-голубая (самая широкая)
+
+    time += 0.02;
+    requestAnimationFrame(drawWaves);
+}
+
+function drawWave(frequency, amplitude, speed, color) {
+    ctx.beginPath();
+    ctx.moveTo(0, height);
+    
+    for (let x = 0; x <= width; x++) {
+        // Формула синусоиды: Y = A * sin(B * X + C)
+        const y = height / 2 + Math.sin(x * frequency + time * speed) * amplitude 
+                   + Math.sin(x * frequency * 2 + time * speed * 1.5) * (amplitude / 2);
+        ctx.lineTo(x, y);
+    }
+    
+    ctx.lineTo(width, height);
+    ctx.closePath();
+    
+    ctx.fillStyle = color;
+    ctx.fill();
+}
+
+// Запуск анимации
+drawWaves();
+
+
+// ==========================================
+// ОСТАЛЬНАЯ ЛОГИКА САЙТА
+// ==========================================
 const ROLE_TITLES = { MANAGER: 'Менеджер', DEPUTY_DIRECTOR: 'Заместитель директора', DIRECTOR: 'Директор', TU: 'ТУ', OD: 'ОД', ID: 'ИД', MODERATOR_ZENIT: 'Модератор Zenit', LEAD_DEV_ZENIT: 'Ведущий разработчик Zenit' };
 
 const DB_ITEMS = [
@@ -130,7 +184,6 @@ const DB_ITEMS = [
   { name: 'База слэнга', image: 'banner_slang.jpg', link: 'slang.html', emoji: '📚' }
 ];
 
-// 🔔 ЛОГИКА УВЕДОМЛЕНИЙ
 function showToast(message, isError = false) {
     const container = document.getElementById('toast-container');
     const toast = document.createElement('div');
@@ -138,56 +191,34 @@ function showToast(message, isError = false) {
     toast.innerHTML = `<span>${isError ? '❌' : '✅'}</span> <span>${message}</span>`;
     container.appendChild(toast);
     setTimeout(() => toast.classList.add('show'), 10);
-    setTimeout(() => {
-        toast.classList.remove('show');
-        setTimeout(() => toast.remove(), 300);
-    }, 3000);
+    setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 300); }, 3000);
 }
 
-// ⚠️ ЛОГИКА ПОДТВЕРЖДЕНИЯ
 let confirmCallback = null;
 function showConfirm(title, text, onConfirm, btnText = 'Подтвердить') {
     document.getElementById('confirm-title').textContent = title;
     document.getElementById('confirm-text').textContent = text;
     const btn = document.getElementById('confirm-yes-btn');
     btn.textContent = btnText;
-    
     confirmCallback = onConfirm;
-    
-    // Обработчик клика по кнопке "Подтвердить"
-    btn.onclick = () => {
-        closeConfirm();
-        if(confirmCallback) confirmCallback();
-    };
-
+    btn.onclick = () => { closeConfirm(); if(confirmCallback) confirmCallback(); };
     document.getElementById('confirm-modal').classList.add('show');
 }
-
 function closeConfirm() {
     document.getElementById('confirm-modal').classList.remove('show');
     confirmCallback = null;
 }
 
-// 🚪 ВЫХОД
 function askLogout() {
-    showConfirm(
-        'Выйти из аккаунта?', 
-        'Вам придется заново ввести логин и пароль, чтобы вернуться.', 
-        () => {
-            localStorage.removeItem('zenit-user');
-            showToast('Вы вышли из аккаунта');
-            setTimeout(() => { location.href = 'login.html'; }, 1000);
-        },
-        'Выйти'
-    );
+    showConfirm('Выйти из аккаунта?', 'Вам придется заново ввести логин и пароль, чтобы вернуться.', () => {
+        localStorage.removeItem('zenit-user');
+        showToast('Вы вышли из аккаунта');
+        setTimeout(() => { location.href = 'login.html'; }, 1000);
+    }, 'Выйти');
 }
 
 function getUser() {
-    try {
-        const raw = localStorage.getItem('zenit-user');
-        if (!raw || raw === 'undefined') return null;
-        return JSON.parse(raw);
-    } catch(e) { return null; }
+    try { const raw = localStorage.getItem('zenit-user'); if (!raw || raw === 'undefined') return null; return JSON.parse(raw); } catch(e) { return null; }
 }
 
 function drawGrid(items) {

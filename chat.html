@@ -32,7 +32,7 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; }
 .file-btn.active { background: rgba(255, 0, 255, 0.15); border-color: #FF00FF; color: #FF00FF; }
 .post-btn { margin-left: auto; padding: 12px 24px; background: linear-gradient(90deg, #FF00FF, #00FFFF); border: none; border-radius: 10px; color: #fff; font-weight: 700; cursor: pointer; font-size: 14px; }
 
-/* 💀 СКЕЛЕТОНЫ (Заглушки при загрузке) */
+/* Скелетоны загрузки */
 .skeleton-post { background: #14142B; border: 1px solid rgba(0, 255, 255, 0.1); border-radius: 14px; padding: 16px; margin-bottom: 14px; }
 .skeleton-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
 .skeleton-avatar { width: 42px; height: 42px; border-radius: 50%; background: #1F1F3A; }
@@ -54,7 +54,6 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; }
 .post-title { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
 .post-content { font-size: 14px; color: #D0D0E0; line-height: 1.5; margin-bottom: 10px; }
 
-/* Остальные стили (реакции, комменты, файлы) как в предыдущей версии... */
 .post-image { width: 100%; max-height: 300px; object-fit: cover; border-radius: 10px; margin-bottom: 10px; border: 1px solid rgba(255, 0, 255, 0.3); cursor: pointer; }
 .post-file { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; background: #0A0A1A; border: 1px solid rgba(0, 255, 255, 0.4); border-radius: 10px; color: #00FFFF; font-size: 13px; text-decoration: none; margin-bottom: 10px; }
 .reactions-row { display: flex; gap: 6px; margin-top: 4px; margin-bottom: 10px; flex-wrap: wrap; }
@@ -74,9 +73,39 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; }
 #viewer { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.95); display: none; align-items: center; justify-content: center; z-index: 1000; }
 #viewer img { max-width: 90%; max-height: 90%; }
 #viewer .close { position: absolute; top: 20px; right: 20px; width: 48px; height: 48px; border-radius: 50%; background: rgba(255, 0, 255, 0.8); border: none; color: #fff; font-size: 24px; cursor: pointer; }
+
+/* 🔔 УВЕДОМЛЕНИЯ И КАСТОМНЫЕ ОКНА */
+#toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+.toast { background: #14142B; color: #fff; padding: 16px 20px; border-radius: 12px; border-left: 4px solid #00FFFF; box-shadow: 0 5px 15px rgba(0,0,0,0.5); font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 10px; transform: translateX(120%); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+.toast.show { transform: translateX(0); }
+.toast.error { border-left-color: #FF00FF; }
+
+#confirm-modal { position: fixed; inset: 0; background: rgba(10, 10, 26, 0.8); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; z-index: 10000; opacity: 0; transition: opacity 0.2s; }
+#confirm-modal.show { display: flex; opacity: 1; }
+.confirm-box { background: #14142B; border: 1px solid #FF00FF; border-radius: 16px; padding: 24px; max-width: 400px; width: 90%; text-align: center; box-shadow: 0 0 30px rgba(255, 0, 255, 0.15); transform: scale(0.9); transition: transform 0.2s; }
+#confirm-modal.show .confirm-box { transform: scale(1); }
+.confirm-title { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 10px; }
+.confirm-text { font-size: 14px; color: #B0B0C0; margin-bottom: 24px; line-height: 1.5; }
+.confirm-actions { display: flex; gap: 10px; }
+.confirm-btn { flex: 1; padding: 14px; border-radius: 12px; border: none; font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+.confirm-btn.cancel { background: transparent; border: 1px solid #606060; color: #B0B0C0; }
+.confirm-btn.danger { background: rgba(255, 0, 255, 0.15); border: 1px solid #FF00FF; color: #FF00FF; }
+.confirm-btn.danger:hover { background: rgba(255, 0, 255, 0.25); }
 </style>
 </head>
 <body>
+
+<div id="toast-container"></div>
+<div id="confirm-modal">
+    <div class="confirm-box">
+        <div class="confirm-title" id="confirm-title">Вы уверены?</div>
+        <div class="confirm-text" id="confirm-text">Это действие нельзя отменить.</div>
+        <div class="confirm-actions">
+            <button class="confirm-btn cancel" onclick="closeConfirm()">Отмена</button>
+            <button class="confirm-btn danger" id="confirm-yes-btn">Подтвердить</button>
+        </div>
+    </div>
+</div>
 
 <div class="header">
   <button class="back-btn" onclick="goBack()">←</button>
@@ -118,7 +147,7 @@ const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 window.SB = window.supabase.createClient(SB_URL, SB_KEY);
 
 let currentUser = JSON.parse(localStorage.getItem('zenit-user') || 'null');
-if (!currentUser) { alert('Пожалуйста, войдите.'); location.href = 'login.html'; }
+if (!currentUser) { location.href = 'login.html'; }
 
 let dbName = new URLSearchParams(location.search).get('db') || 'База Документов';
 let selectedFile = null, selectedImage = null, allPosts = [];
@@ -126,36 +155,51 @@ let selectedFile = null, selectedImage = null, allPosts = [];
 document.getElementById('db-name').textContent = dbName;
 document.getElementById('db-role').textContent = currentUser.name + ' · ' + (currentUser.role || '');
 
-// 💀 ФУНКЦИЯ ОТРИСОВКИ СКЕЛЕТОНОВ
+// 🔔 УВЕДОМЛЕНИЯ И ПОДТВЕРЖДЕНИЯ
+function showToast(message, isError = false) {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = 'toast' + (isError ? ' error' : '');
+    toast.innerHTML = `<span>${isError ? '❌' : '✅'}</span> <span>${message}</span>`;
+    container.appendChild(toast);
+    setTimeout(() => toast.classList.add('show'), 10);
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
+let confirmCallback = null;
+function showConfirm(title, text, onConfirm, btnText = 'Подтвердить') {
+    document.getElementById('confirm-title').textContent = title;
+    document.getElementById('confirm-text').textContent = text;
+    const btn = document.getElementById('confirm-yes-btn');
+    btn.textContent = btnText;
+    confirmCallback = onConfirm;
+    btn.onclick = () => { closeConfirm(); if(confirmCallback) confirmCallback(); };
+    document.getElementById('confirm-modal').classList.add('show');
+}
+function closeConfirm() {
+    document.getElementById('confirm-modal').classList.remove('show');
+    confirmCallback = null;
+}
+
+// 💀 СКЕЛЕТОНЫ
 function showSkeletons() {
     const container = document.getElementById('posts-container');
     let html = '';
     for (let i = 0; i < 3; i++) {
-        html += `
-            <div class="skeleton-post skeleton-pulse">
-                <div class="skeleton-header">
-                    <div class="skeleton-avatar"></div>
-                    <div style="flex:1;">
-                        <div class="skeleton-line short"></div>
-                        <div class="skeleton-line" style="width: 20%;"></div>
-                    </div>
-                </div>
-                <div class="skeleton-line" style="width: 60%; height: 20px;"></div>
-                <div class="skeleton-line long"></div>
-            </div>
-        `;
+        html += `<div class="skeleton-post skeleton-pulse"><div class="skeleton-header"><div class="skeleton-avatar"></div><div style="flex:1;"><div class="skeleton-line short"></div><div class="skeleton-line" style="width: 20%;"></div></div></div><div class="skeleton-line" style="width: 60%; height: 20px;"></div><div class="skeleton-line long"></div></div>`;
     }
     container.innerHTML = html;
 }
 
 async function loadPosts() {
-  showSkeletons(); // Показываем скелетоны вместо пустоты
+  showSkeletons(); 
   try {
     const { data, error } = await window.SB.from('posts').select('*').eq('database_name', dbName).order('id', { ascending: false });
     if (error) throw error;
     allPosts = data || [];
-    
-    // Небольшая задержка, чтобы скелетоны не мигали слишком быстро
     setTimeout(() => renderPosts(allPosts), 300); 
   } catch (e) {
     document.getElementById('posts-container').innerHTML = '<div class="empty">Ошибка: ' + e.message + '</div>';
@@ -198,7 +242,7 @@ async function renderPost(post) {
         <div class="post-author-name">${escapeHtml(post.author)}</div>
         <div class="post-author-role">${escapeHtml(post.role || '')}</div>
       </div>
-      ${isMine ? `<button class="post-delete" onclick="deletePost(${post.id})">🗑</button>` : ''}
+      ${isMine ? `<button class="post-delete" onclick="askDeletePost(${post.id})">🗑</button>` : ''}
     </div>
     <div class="post-title">${escapeHtml(post.title)}</div>
     <div class="post-content">${escapeHtml(post.content)}</div>
@@ -227,7 +271,16 @@ async function renderPost(post) {
   return el;
 }
 
-/* --- ВСЕ ОСТАЛЬНЫЕ ФУНКЦИИ (РЕАКЦИИ, КОММЕНТАРИИ, ФАЙЛЫ) ОСТАЮТСЯ БЕЗ ИЗМЕНЕНИЙ --- */
+// ДЕЙСТВИЯ С КАСТОМНЫМИ ОКНАМИ
+function askDeletePost(postId) {
+    showConfirm('Удалить пост?', 'Он исчезнет из базы навсегда.', async () => {
+        await window.SB.from('posts').delete().eq('id', postId);
+        showToast('Пост удален');
+        loadPosts();
+    }, 'Удалить');
+}
+
+// РЕАКЦИИ
 async function loadReactions(postId) {
   const { data, error } = await window.SB.from('reactions').select('*').eq('post_id', postId);
   if (error) return []; return data || [];
@@ -255,12 +308,14 @@ async function renderReactionsHtml(postId) {
   html += '</div>'; return html;
 }
 
+// СОЗДАНИЕ ПОСТА
 document.getElementById('composer').style.display = 'block';
 function onFileSelected(input, type) {
   const file = input.files[0]; if (!file) return;
   if (type === 'file') { selectedFile = file; document.getElementById('file-btn').textContent = '📎 ' + file.name.slice(0, 15); document.getElementById('file-btn').classList.add('active'); } 
   else { selectedImage = file; document.getElementById('image-btn').textContent = '🖼 ' + file.name.slice(0, 15); document.getElementById('image-btn').classList.add('active'); }
 }
+
 async function uploadFile(file, bucket) {
   const fileName = 'web_' + Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
   const { data, error } = await window.SB.storage.from(bucket).upload(fileName, file);
@@ -268,26 +323,34 @@ async function uploadFile(file, bucket) {
   const { data: urlData } = window.SB.storage.from(bucket).getPublicUrl(fileName);
   return urlData.publicUrl;
 }
+
 async function submitPost() {
   const title = document.getElementById('post-title').value.trim();
   const content = document.getElementById('post-content').value.trim();
   const btn = document.getElementById('submit-btn');
-  if (!title || !content) { alert('Заполните все поля'); return; }
+  
+  if (!title || !content) { showToast('Заполните заголовок и текст', true); return; }
+
   btn.disabled = true; btn.textContent = 'Публикация...';
   try {
     let fileUrl = null, imageUrl = null;
     if (selectedFile) fileUrl = await uploadFile(selectedFile, 'attachments');
     if (selectedImage) imageUrl = await uploadFile(selectedImage, 'images');
+    
     const { error } = await window.SB.from('posts').insert({ database_name: dbName, title: title, content: content, author: currentUser.name, role: currentUser.role, author_avatar: currentUser.avatar_url || '', has_file: !!fileUrl, has_image: !!imageUrl, file_url: fileUrl, image_url: imageUrl });
     if (error) throw error;
+    
     document.getElementById('post-title').value = ''; document.getElementById('post-content').value = '';
     document.getElementById('file-btn').textContent = '📎 Файл'; document.getElementById('file-btn').classList.remove('active');
     document.getElementById('image-btn').textContent = '🖼 Фото'; document.getElementById('image-btn').classList.remove('active');
     selectedFile = null; selectedImage = null;
+    showToast('Пост опубликован');
     loadPosts();
-  } catch (e) { alert('Ошибка: ' + e.message); } finally { btn.disabled = false; btn.textContent = 'Опубликовать'; }
+  } catch (e) { showToast('Ошибка: ' + e.message, true); } 
+  finally { btn.disabled = false; btn.textContent = 'Опубликовать'; }
 }
-async function deletePost(postId) { if (!confirm('Удалить пост?')) return; await window.SB.from('posts').delete().eq('id', postId); loadPosts(); }
+
+// КОММЕНТАРИИ
 async function loadCommentsCount(postId) {
   const { count } = await window.SB.from('comments').select('*', { count: 'exact', head: true }).eq('post_id', postId);
   const el = document.getElementById('comments-count-' + postId);
@@ -304,21 +367,29 @@ async function loadComments(postId) {
   const { data, error } = await window.SB.from('comments').select('*').eq('post_id', postId).order('id', { ascending: true });
   if (error) { container.innerHTML = '<div style="color:#FF00FF; font-size:12px;">Ошибка</div>'; return; }
   if (!data || data.length === 0) { container.innerHTML = '<div style="color:#606060; font-size:12px; padding:6px;">Нет комментариев</div>'; return; }
+  
   container.innerHTML = data.map(c => {
     const initial = c.author ? c.author.charAt(0).toUpperCase() : '?';
     const avatarInner = c.author_avatar ? `<img src="${escapeAttr(c.author_avatar)}" alt="">` : initial;
     const authorLink = `profile.html?user=${encodeURIComponent(c.author)}`;
-    return `<div class="comment"><div class="comment-avatar" onclick="location.href='${authorLink}'">${avatarInner}</div><div style="flex:1; margin-left:8px;"><div class="comment-author" onclick="location.href='${authorLink}'">${escapeHtml(c.author)}</div><div class="comment-text">${escapeHtml(c.text)}</div></div><button class="comment-delete" style="background:none;border:none;color:#606060;cursor:pointer;" onclick="deleteComment(${c.id}, ${postId})">🗑</button></div>`;
+    return `<div class="comment"><div class="comment-avatar" onclick="location.href='${authorLink}'">${avatarInner}</div><div style="flex:1; margin-left:8px;"><div class="comment-author" onclick="location.href='${authorLink}'">${escapeHtml(c.author)}</div><div class="comment-text">${escapeHtml(c.text)}</div></div><button style="background:none;border:none;color:#606060;cursor:pointer;" onclick="askDeleteComment(${c.id}, ${postId})">🗑</button></div>`;
   }).join('');
 }
 async function addComment(postId) {
   const input = document.getElementById('comment-input-' + postId);
   const text = input.value.trim(); if (!text) return;
   const { error } = await window.SB.from('comments').insert({ post_id: postId, author: currentUser.name, role: currentUser.role, author_avatar: currentUser.avatar_url || '', text: text });
-  if (error) { alert('Ошибка: ' + error.message); return; }
+  if (error) { showToast('Ошибка: ' + error.message, true); return; }
   input.value = ''; loadComments(postId); loadCommentsCount(postId);
 }
-async function deleteComment(commentId, postId) { if (!confirm('Удалить комментарий?')) return; await window.SB.from('comments').delete().eq('id', commentId); loadComments(postId); loadCommentsCount(postId); }
+function askDeleteComment(commentId, postId) {
+    showConfirm('Удалить комментарий?', 'Он будет удален безвозвратно.', async () => {
+        await window.SB.from('comments').delete().eq('id', commentId);
+        showToast('Комментарий удален');
+        loadComments(postId); loadCommentsCount(postId);
+    }, 'Удалить');
+}
+
 function viewImage(url) { document.getElementById('viewer-img').src = url; document.getElementById('viewer').style.display = 'flex'; }
 function goBack() { history.back(); }
 function escapeHtml(text) { if (!text) return ''; return String(text).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c])); }

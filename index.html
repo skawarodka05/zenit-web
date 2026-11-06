@@ -13,8 +13,8 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; overflow-x: hidden; 
 /* 🎨 АНИМИРОВАННЫЙ ФОН */
 #wave-bg {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    z-index: -1; pointer-events: none; /* Пропускает клики сквозь себя */
-    opacity: 0.6;
+    z-index: -1; pointer-events: none;
+    opacity: 0.7;
 }
 
 ::-webkit-scrollbar { width: 8px; }
@@ -22,7 +22,7 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; overflow-x: hidden; 
 ::-webkit-scrollbar-thumb { background: #00FFFF; border-radius: 4px; }
 
 /* Контент поверх фона */
-.header { display: flex; align-items: center; gap: 12px; padding: 16px; background: rgba(20, 20, 43, 0.8); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(0, 255, 255, 0.3); position: sticky; top: 0; z-index: 100; }
+.header { display: flex; align-items: center; gap: 12px; padding: 16px; background: rgba(20, 20, 43, 0.85); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(0, 255, 255, 0.3); position: sticky; top: 0; z-index: 100; }
 .logo-wrap { display: flex; align-items: center; gap: 12px; flex: 1; text-decoration: none; color: inherit; }
 .logo-img { width: 44px; height: 44px; object-fit: contain; }
 .logo-text h1 { font-size: 22px; font-weight: 900; letter-spacing: 1px; }
@@ -33,17 +33,17 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; overflow-x: hidden; 
 .header-btn.pink:hover { background: rgba(255, 0, 255, 0.15); }
 
 .container { max-width: 1100px; margin: 0 auto; padding: 16px; position: relative; z-index: 1; }
-.user-card { background: rgba(20, 20, 43, 0.8); backdrop-filter: blur(5px); border: 1px solid rgba(255, 0, 255, 0.5); border-radius: 12px; padding: 14px 16px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; text-decoration: none; color: #fff; transition: all 0.2s; }
+.user-card { background: rgba(20, 20, 43, 0.85); backdrop-filter: blur(5px); border: 1px solid rgba(255, 0, 255, 0.5); border-radius: 12px; padding: 14px 16px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; text-decoration: none; color: #fff; transition: all 0.2s; }
 .user-card:hover { background: rgba(20, 20, 43, 0.95); }
 .user-name { font-size: 16px; font-weight: 700; }
 .user-profile-link { font-size: 13px; color: #00FFFF; font-weight: bold; }
 
 .search-bar { margin-bottom: 24px; }
-.search-input { width: 100%; padding: 14px 18px; border-radius: 12px; background: rgba(20, 20, 43, 0.8); backdrop-filter: blur(5px); border: 1px solid rgba(0, 255, 255, 0.5); color: #fff; font-size: 15px; outline: none; transition: all 0.2s; }
+.search-input { width: 100%; padding: 14px 18px; border-radius: 12px; background: rgba(20, 20, 43, 0.85); backdrop-filter: blur(5px); border: 1px solid rgba(0, 255, 255, 0.5); color: #fff; font-size: 15px; outline: none; transition: all 0.2s; }
 .search-input:focus { border-color: #00FFFF; box-shadow: 0 0 12px rgba(0, 255, 255, 0.3); }
 
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
-.db-card { background: rgba(20, 20, 43, 0.8); backdrop-filter: blur(5px); border: 1px solid rgba(0, 255, 255, 0.5); border-radius: 14px; overflow: hidden; text-decoration: none; color: #fff; display: flex; flex-direction: column; transition: all 0.2s; }
+.db-card { background: rgba(20, 20, 43, 0.85); backdrop-filter: blur(5px); border: 1px solid rgba(0, 255, 255, 0.5); border-radius: 14px; overflow: hidden; text-decoration: none; color: #fff; display: flex; flex-direction: column; transition: all 0.2s; }
 .db-card:hover { border-color: #00FFFF; box-shadow: 0 0 15px rgba(0, 255, 255, 0.2); transform: translateY(-2px); }
 
 .db-image { width: 100%; height: 280px; border-bottom: 1px solid rgba(0, 255, 255, 0.3); position: relative; background: #0A0A1A; overflow: hidden; }
@@ -114,7 +114,7 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; overflow-x: hidden; 
 
 <script>
 // ==========================================
-// 🌊 АНИМАЦИЯ ВОЛН НА ФОНЕ
+// 🌊 АНИМАЦИЯ ВОЛН (PS3 STYLE)
 // ==========================================
 const canvas = document.getElementById('wave-bg');
 const ctx = canvas.getContext('2d');
@@ -132,12 +132,14 @@ let time = 0;
 function drawWaves() {
     ctx.clearRect(0, 0, width, height);
 
-    // Рисуем 3 волны с разными параметрами
-    drawWave(0.005, 80, 0.02, 'rgba(0, 255, 255, 0.15)');  // Голубая
-    drawWave(0.008, 60, 0.03, 'rgba(255, 0, 255, 0.1)');   // Розовая
-    drawWave(0.004, 100, 0.015, 'rgba(0, 255, 255, 0.05)'); // Светло-голубая (самая широкая)
+    // Рисуем 3 слоя волн (увеличены скорость и амплитуда для эффекта PS3)
+    drawWave(0.004, 120, 0.06, 'rgba(0, 255, 255, 0.15)');  // Быстрая голубая
+    drawWave(0.006, 90, 0.08, 'rgba(255, 0, 255, 0.1)');    // Быстрая розовая
+    drawWave(0.003, 150, 0.04, 'rgba(0, 255, 255, 0.05)');  // Широкая фоновая
 
-    time += 0.02;
+    // Увеличили прирост времени (было 0.02, стало 0.05)
+    time += 0.05; 
+    
     requestAnimationFrame(drawWaves);
 }
 
@@ -146,7 +148,7 @@ function drawWave(frequency, amplitude, speed, color) {
     ctx.moveTo(0, height);
     
     for (let x = 0; x <= width; x++) {
-        // Формула синусоиды: Y = A * sin(B * X + C)
+        // Волновая формула
         const y = height / 2 + Math.sin(x * frequency + time * speed) * amplitude 
                    + Math.sin(x * frequency * 2 + time * speed * 1.5) * (amplitude / 2);
         ctx.lineTo(x, y);

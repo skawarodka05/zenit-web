@@ -52,7 +52,7 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; display: flex; flex-
     <input type="password" id="reg-password" placeholder="••••••••">
   </div>
 
-  <div class="input-group">
+    <div class="input-group">
     <label>Ваша роль</label>
     <select id="reg-role">
       <option value="MANAGER">Менеджер</option>
@@ -63,9 +63,15 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; display: flex; flex-
       <option value="ID">ИД</option>
       <option value="MODERATOR_ZENIT">Модератор Zenit</option>
       <option value="LEAD_DEV_ZENIT">Ведущий разработчик Zenit</option>
+      
+      <!-- 👇 НОВЫЕ РОЛИ -->
+      <option value="TRAINEE">Стажёр</option>
+      <option value="CHBR">ЧБР</option>
+      <option value="UNIVERSAL">Универсал</option>
+      <option value="TRAINER">Тренер</option>
+      <option value="SHIFT_TRAINER">Тренер шифт</option>
     </select>
   </div>
-
   <button class="btn" id="reg-btn" onclick="doRegister()">ЗАРЕГИСТРИРОВАТЬСЯ</button>
   
   <div class="error-msg" id="error-msg">Ошибка регистрации</div>

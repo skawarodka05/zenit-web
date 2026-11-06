@@ -24,6 +24,7 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; }
 .search-input { width: 100%; padding: 14px 18px; border-radius: 12px; background: #14142B; border: 1px solid rgba(0, 255, 255, 0.4); color: #fff; font-size: 14px; outline: none; }
 .search-input:focus { border-color: #00FFFF; }
 
+/* Форма создания поста */
 .composer { background: #14142B; border: 1px solid rgba(0, 255, 255, 0.4); border-radius: 14px; padding: 16px; margin-bottom: 20px; }
 .composer-title { font-size: 14px; font-weight: 700; margin-bottom: 10px; color: #00FFFF; }
 .composer input[type="text"], .composer textarea { width: 100%; padding: 12px 14px; border-radius: 10px; background: #0A0A1A; border: 1px solid rgba(0, 255, 255, 0.3); color: #fff; font-size: 14px; outline: none; margin-bottom: 10px; font-family: inherit; resize: vertical; }
@@ -32,7 +33,14 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; }
 .file-btn.active { background: rgba(255, 0, 255, 0.15); border-color: #FF00FF; color: #FF00FF; }
 .post-btn { margin-left: auto; padding: 12px 24px; background: linear-gradient(90deg, #FF00FF, #00FFFF); border: none; border-radius: 10px; color: #fff; font-weight: 700; cursor: pointer; font-size: 14px; }
 
-/* Скелетоны загрузки */
+/* Сообщение об ограничении */
+.restriction-msg {
+    background: rgba(255, 0, 255, 0.1); border: 1px solid #FF00FF;
+    color: #FF00FF; padding: 16px; border-radius: 14px; margin-bottom: 20px;
+    text-align: center; font-weight: 700; font-size: 14px;
+}
+
+/* Скелетоны */
 .skeleton-post { background: #14142B; border: 1px solid rgba(0, 255, 255, 0.1); border-radius: 14px; padding: 16px; margin-bottom: 14px; }
 .skeleton-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
 .skeleton-avatar { width: 42px; height: 42px; border-radius: 50%; background: #1F1F3A; }
@@ -53,7 +61,6 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; }
 .post-delete { width: 32px; height: 32px; border-radius: 8px; background: transparent; border: 1px solid rgba(255, 0, 255, 0.3); color: #FF00FF; cursor: pointer; font-size: 16px; }
 .post-title { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
 .post-content { font-size: 14px; color: #D0D0E0; line-height: 1.5; margin-bottom: 10px; }
-
 .post-image { width: 100%; max-height: 300px; object-fit: cover; border-radius: 10px; margin-bottom: 10px; border: 1px solid rgba(255, 0, 255, 0.3); cursor: pointer; }
 .post-file { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; background: #0A0A1A; border: 1px solid rgba(0, 255, 255, 0.4); border-radius: 10px; color: #00FFFF; font-size: 13px; text-decoration: none; margin-bottom: 10px; }
 .reactions-row { display: flex; gap: 6px; margin-top: 4px; margin-bottom: 10px; flex-wrap: wrap; }
@@ -74,9 +81,8 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; }
 #viewer img { max-width: 90%; max-height: 90%; }
 #viewer .close { position: absolute; top: 20px; right: 20px; width: 48px; height: 48px; border-radius: 50%; background: rgba(255, 0, 255, 0.8); border: none; color: #fff; font-size: 24px; cursor: pointer; }
 
-/* 🔔 УВЕДОМЛЕНИЯ И КАСТОМНЫЕ ОКНА */
 #toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
-.toast { background: #14142B; color: #fff; padding: 16px 20px; border-radius: 12px; border-left: 4px solid #00FFFF; box-shadow: 0 5px 15px rgba(0,0,0,0.5); font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 10px; transform: translateX(120%); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+.toast { background: #14142B; color: #fff; padding: 16px 20px; border-radius: 12px; border-left: 4px solid #00FFFF; box-shadow: 0 5px 15px rgba(0,0,0,0.5); font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 10px; transform: translateX(120%); transition: transform 0.3s; }
 .toast.show { transform: translateX(0); }
 .toast.error { border-left-color: #FF00FF; }
 
@@ -90,7 +96,6 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; }
 .confirm-btn { flex: 1; padding: 14px; border-radius: 12px; border: none; font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
 .confirm-btn.cancel { background: transparent; border: 1px solid #606060; color: #B0B0C0; }
 .confirm-btn.danger { background: rgba(255, 0, 255, 0.15); border: 1px solid #FF00FF; color: #FF00FF; }
-.confirm-btn.danger:hover { background: rgba(255, 0, 255, 0.25); }
 </style>
 </head>
 <body>
@@ -118,6 +123,11 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; }
 <div class="container">
   <div class="search-bar">
     <input type="text" class="search-input" id="search-input" placeholder="🔍 Поиск по постам..." oninput="filterPosts()">
+  </div>
+
+  <!-- Сообщение, если роль запрещает писать -->
+  <div class="restriction-msg" id="restriction-msg" style="display:none;">
+    🚫 Ваша роль не позволяет создавать посты в этом разделе.
   </div>
 
   <div class="composer" id="composer" style="display:none;">
@@ -155,7 +165,18 @@ let selectedFile = null, selectedImage = null, allPosts = [];
 document.getElementById('db-name').textContent = dbName;
 document.getElementById('db-role').textContent = currentUser.name + ' · ' + (currentUser.role || '');
 
-// 🔔 УВЕДОМЛЕНИЯ И ПОДТВЕРЖДЕНИЯ
+// 🚫 СПИСОК РОЛЕЙ, КОТОРЫМ ЗАПРЕЩЕНО СОЗДАВАТЬ ПОСТЫ
+const RESTRICTED_ROLES = ['TRAINEE', 'CHBR', 'UNIVERSAL', 'TRAINER', 'SHIFT_TRAINER'];
+
+// Показываем или скрываем форму
+if (RESTRICTED_ROLES.includes(currentUser.role)) {
+    document.getElementById('restriction-msg').style.display = 'block';
+    document.getElementById('composer').style.display = 'none';
+} else {
+    document.getElementById('restriction-msg').style.display = 'none';
+    document.getElementById('composer').style.display = 'block';
+}
+
 function showToast(message, isError = false) {
     const container = document.getElementById('toast-container');
     const toast = document.createElement('div');
@@ -163,35 +184,20 @@ function showToast(message, isError = false) {
     toast.innerHTML = `<span>${isError ? '❌' : '✅'}</span> <span>${message}</span>`;
     container.appendChild(toast);
     setTimeout(() => toast.classList.add('show'), 10);
-    setTimeout(() => {
-        toast.classList.remove('show');
-        setTimeout(() => toast.remove(), 300);
-    }, 3000);
+    setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 300); }, 3000);
 }
 
-// ⚠️ ИСПРАВЛЕНО: Теперь удаление работает!
 function showConfirm(title, text, onConfirm, btnText = 'Подтвердить') {
     document.getElementById('confirm-title').textContent = title;
     document.getElementById('confirm-text').textContent = text;
     const btn = document.getElementById('confirm-yes-btn');
     btn.textContent = btnText;
-    
-    // Сохраняем функцию локально
     const actionToPerform = onConfirm;
-    
-    btn.onclick = () => {
-        closeConfirm(); // Закрываем окно
-        if(actionToPerform) actionToPerform(); // Выполняем удаление
-    };
-    
+    btn.onclick = () => { closeConfirm(); if(actionToPerform) actionToPerform(); };
     document.getElementById('confirm-modal').classList.add('show');
 }
+function closeConfirm() { document.getElementById('confirm-modal').classList.remove('show'); }
 
-function closeConfirm() {
-    document.getElementById('confirm-modal').classList.remove('show');
-}
-
-// 💀 СКЕЛЕТОНЫ
 function showSkeletons() {
     const container = document.getElementById('posts-container');
     let html = '';
@@ -278,7 +284,6 @@ async function renderPost(post) {
   return el;
 }
 
-// ДЕЙСТВИЯ С КАСТОМНЫМИ ОКНАМИ
 function askDeletePost(postId) {
     showConfirm('Удалить пост?', 'Он исчезнет из базы навсегда.', async () => {
         await window.SB.from('posts').delete().eq('id', postId);
@@ -287,7 +292,6 @@ function askDeletePost(postId) {
     }, 'Удалить');
 }
 
-// РЕАКЦИИ
 async function loadReactions(postId) {
   const { data, error } = await window.SB.from('reactions').select('*').eq('post_id', postId);
   if (error) return []; return data || [];
@@ -315,8 +319,6 @@ async function renderReactionsHtml(postId) {
   html += '</div>'; return html;
 }
 
-// СОЗДАНИЕ ПОСТА
-document.getElementById('composer').style.display = 'block';
 function onFileSelected(input, type) {
   const file = input.files[0]; if (!file) return;
   if (type === 'file') { selectedFile = file; document.getElementById('file-btn').textContent = '📎 ' + file.name.slice(0, 15); document.getElementById('file-btn').classList.add('active'); } 
@@ -357,7 +359,6 @@ async function submitPost() {
   finally { btn.disabled = false; btn.textContent = 'Опубликовать'; }
 }
 
-// КОММЕНТАРИИ
 async function loadCommentsCount(postId) {
   const { count } = await window.SB.from('comments').select('*', { count: 'exact', head: true }).eq('post_id', postId);
   const el = document.getElementById('comments-count-' + postId);

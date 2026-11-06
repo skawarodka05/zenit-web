@@ -10,11 +10,9 @@
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
 body { background: #0A0A1A; color: #fff; min-height: 100vh; }
 
-/* Стили для скроллбара */
 ::-webkit-scrollbar { width: 8px; }
 ::-webkit-scrollbar-track { background: #0A0A1A; }
 ::-webkit-scrollbar-thumb { background: #00FFFF; border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: #FF00FF; }
 
 .header { display: flex; align-items: center; gap: 12px; padding: 16px; background: #14142B; border-bottom: 1px solid rgba(0, 255, 255, 0.3); position: sticky; top: 0; z-index: 100; }
 .logo-wrap { display: flex; align-items: center; gap: 12px; flex: 1; text-decoration: none; color: inherit; }
@@ -57,12 +55,36 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; }
 }
 .toast.show { transform: translateX(0); }
 .toast.error { border-left-color: #FF00FF; }
+
+/* ⚠️ СТИЛИ ДЛЯ МОДАЛЬНОГО ОКНА ПОДТВЕРЖДЕНИЯ */
+#confirm-modal { position: fixed; inset: 0; background: rgba(10, 10, 26, 0.8); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; z-index: 10000; opacity: 0; transition: opacity 0.2s; }
+#confirm-modal.show { display: flex; opacity: 1; }
+.confirm-box { background: #14142B; border: 1px solid #00FFFF; border-radius: 16px; padding: 24px; max-width: 400px; width: 90%; text-align: center; box-shadow: 0 0 30px rgba(0, 255, 255, 0.2); transform: scale(0.9); transition: transform 0.2s; }
+#confirm-modal.show .confirm-box { transform: scale(1); }
+.confirm-title { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 10px; }
+.confirm-text { font-size: 14px; color: #B0B0C0; margin-bottom: 24px; line-height: 1.5; }
+.confirm-actions { display: flex; gap: 10px; }
+.confirm-btn { flex: 1; padding: 14px; border-radius: 12px; border: none; font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+.confirm-btn.cancel { background: transparent; border: 1px solid #606060; color: #B0B0C0; }
+.confirm-btn.cancel:hover { background: rgba(255, 255, 255, 0.05); }
+.confirm-btn.danger { background: rgba(255, 0, 255, 0.15); border: 1px solid #FF00FF; color: #FF00FF; }
+.confirm-btn.danger:hover { background: rgba(255, 0, 255, 0.25); box-shadow: 0 0 15px rgba(255, 0, 255, 0.4); }
 </style>
 </head>
 <body>
 
-<!-- Контейнер для уведомлений -->
+<!-- Контейнеры для кастомных окон -->
 <div id="toast-container"></div>
+<div id="confirm-modal">
+    <div class="confirm-box">
+        <div class="confirm-title" id="confirm-title">Вы уверены?</div>
+        <div class="confirm-text" id="confirm-text">Это действие нельзя отменить.</div>
+        <div class="confirm-actions">
+            <button class="confirm-btn cancel" onclick="closeConfirm()">Отмена</button>
+            <button class="confirm-btn danger" id="confirm-yes-btn">Подтвердить</button>
+        </div>
+    </div>
+</div>
 
 <div class="header">
   <a href="index.html" class="logo-wrap">
@@ -73,7 +95,7 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; }
     </div>
   </a>
   <a href="tasks.html" class="header-btn" title="Мой Чек-лист">✅</a>
-  <button class="header-btn pink" onclick="logout()" title="Выйти">🚪</button>
+  <button class="header-btn pink" onclick="askLogout()" title="Выйти">🚪</button>
 </div>
 
 <div class="container">
@@ -108,21 +130,56 @@ const DB_ITEMS = [
   { name: 'База слэнга', image: 'banner_slang.jpg', link: 'slang.html', emoji: '📚' }
 ];
 
-// 🔔 ФУНКЦИЯ УВЕДОМЛЕНИЙ
+// 🔔 ЛОГИКА УВЕДОМЛЕНИЙ
 function showToast(message, isError = false) {
     const container = document.getElementById('toast-container');
     const toast = document.createElement('div');
     toast.className = 'toast' + (isError ? ' error' : '');
     toast.innerHTML = `<span>${isError ? '❌' : '✅'}</span> <span>${message}</span>`;
     container.appendChild(toast);
-    
-    // Появление
     setTimeout(() => toast.classList.add('show'), 10);
-    // Исчезновение
     setTimeout(() => {
         toast.classList.remove('show');
         setTimeout(() => toast.remove(), 300);
     }, 3000);
+}
+
+// ⚠️ ЛОГИКА ПОДТВЕРЖДЕНИЯ
+let confirmCallback = null;
+function showConfirm(title, text, onConfirm, btnText = 'Подтвердить') {
+    document.getElementById('confirm-title').textContent = title;
+    document.getElementById('confirm-text').textContent = text;
+    const btn = document.getElementById('confirm-yes-btn');
+    btn.textContent = btnText;
+    
+    confirmCallback = onConfirm;
+    
+    // Обработчик клика по кнопке "Подтвердить"
+    btn.onclick = () => {
+        closeConfirm();
+        if(confirmCallback) confirmCallback();
+    };
+
+    document.getElementById('confirm-modal').classList.add('show');
+}
+
+function closeConfirm() {
+    document.getElementById('confirm-modal').classList.remove('show');
+    confirmCallback = null;
+}
+
+// 🚪 ВЫХОД
+function askLogout() {
+    showConfirm(
+        'Выйти из аккаунта?', 
+        'Вам придется заново ввести логин и пароль, чтобы вернуться.', 
+        () => {
+            localStorage.removeItem('zenit-user');
+            showToast('Вы вышли из аккаунта');
+            setTimeout(() => { location.href = 'login.html'; }, 1000);
+        },
+        'Выйти'
+    );
 }
 
 function getUser() {
@@ -137,7 +194,6 @@ function drawGrid(items) {
     const grid = document.getElementById('grid');
     if (!grid) return;
     if (items.length === 0) { grid.innerHTML = '<div class="empty">Ничего не найдено</div>'; return; }
-    
     let html = '';
     items.forEach(item => {
         let imgHtml = item.image 
@@ -169,13 +225,6 @@ document.addEventListener('DOMContentLoaded', () => {
         drawGrid(q ? DB_ITEMS.filter(i => i.name.toLowerCase().includes(q)) : DB_ITEMS);
     });
 });
-
-// Выход с красивым уведомлением
-function logout() {
-    localStorage.removeItem('zenit-user'); 
-    showToast('Вы вышли из аккаунта');
-    setTimeout(() => { location.href = 'login.html'; }, 1000); // Даем время увидеть уведомление
-}
 </script>
 </body>
 </html>

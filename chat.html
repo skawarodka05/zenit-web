@@ -169,19 +169,19 @@ function showToast(message, isError = false) {
     }, 3000);
 }
 
-// СТАЛО (РАБОЧИЙ КОД):
+// ⚠️ ИСПРАВЛЕНО: Теперь удаление работает!
 function showConfirm(title, text, onConfirm, btnText = 'Подтвердить') {
     document.getElementById('confirm-title').textContent = title;
     document.getElementById('confirm-text').textContent = text;
     const btn = document.getElementById('confirm-yes-btn');
     btn.textContent = btnText;
     
-    // Сохраняем действие локально
+    // Сохраняем функцию локально
     const actionToPerform = onConfirm;
     
     btn.onclick = () => {
         closeConfirm(); // Закрываем окно
-        if(actionToPerform) actionToPerform(); // Выполняем действие (удаление)
+        if(actionToPerform) actionToPerform(); // Выполняем удаление
     };
     
     document.getElementById('confirm-modal').classList.add('show');
@@ -190,6 +190,7 @@ function showConfirm(title, text, onConfirm, btnText = 'Подтвердить')
 function closeConfirm() {
     document.getElementById('confirm-modal').classList.remove('show');
 }
+
 // 💀 СКЕЛЕТОНЫ
 function showSkeletons() {
     const container = document.getElementById('posts-container');

@@ -42,7 +42,7 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; overflow-x: hidden; 
 .search-input { width: 100%; padding: 14px 18px; border-radius: 12px; background: rgba(20, 20, 43, 0.85); backdrop-filter: blur(5px); border: 1px solid rgba(0, 255, 255, 0.5); color: #fff; font-size: 15px; outline: none; transition: all 0.2s; }
 .search-input:focus { border-color: #00FFFF; box-shadow: 0 0 12px rgba(0, 255, 255, 0.3); }
 
-/* 🎵 ВИДЖЕТ ЯНДЕКС.МУЗЫКИ */
+/* 🎵 ВИДЖЕТ ЯНДЕКС.МУЗЫКИ С ВЫБОРОМ ПЛЕЙЛИСТА */
 .music-widget {
     margin-bottom: 24px;
     border-radius: 14px;
@@ -55,6 +55,45 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; overflow-x: hidden; 
 .music-widget:hover {
     border-color: #00FFFF;
     box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+}
+
+/* Панель выбора плейлиста */
+.playlist-selector {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: rgba(10, 10, 26, 0.6);
+    border-bottom: 1px solid rgba(0, 255, 255, 0.2);
+}
+.playlist-selector label {
+    font-size: 14px;
+    font-weight: 700;
+    color: #00FFFF;
+    white-space: nowrap;
+}
+.custom-select {
+    flex: 1;
+    padding: 10px 14px;
+    border-radius: 8px;
+    background: #0A0A1A;
+    border: 1px solid rgba(255, 0, 255, 0.4);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    outline: none;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23FF00FF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px top 50%;
+    background-size: 12px auto;
+    transition: all 0.2s;
+}
+.custom-select:focus, .custom-select:hover {
+    border-color: #FF00FF;
+    box-shadow: 0 0 10px rgba(255, 0, 255, 0.2);
 }
 
 /* Сетка карточек */
@@ -127,14 +166,24 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; overflow-x: hidden; 
     <input type="text" class="search-input" id="search-input" placeholder="🔍 Поиск раздела...">
   </div>
 
-  <!-- 🎵 ВИДЖЕТ ЯНДЕКС.МУЗЫКИ -->
+  <!-- 🎵 ВИДЖЕТ ЯНДЕКС.МУЗЫКИ С ВЫБОРОМ ПЛЕЙЛИСТА -->
   <div class="music-widget">
+    <div class="playlist-selector">
+      <label>🎵 Плейлист:</label>
+      <select class="custom-select" id="playlist-select">
+        <!-- ЗДЕСЬ МЕНЯЙ ССЫЛКИ НА СВОИ ПЛЕЙЛИСТЫ -->
+        <option value="https://music.yandex.ru/iframe/#playlist/yandex/1031">Плейлист дня</option>
+        <option value="https://music.yandex.ru/iframe/#playlist/yandex/1032">DejaVu FM</option>
+        <option value="https://music.yandex.ru/iframe/#track/43643085/5813591">Трек: Мой вайб</option>
+      </select>
+    </div>
     <iframe 
+      id="music-iframe"
       frameborder="0" 
       style="border:none; width:100%; height:180px;" 
       width="100%" 
       height="180" 
-      src="https://music.yandex.ru/iframe/#track/43643085/5813591">
+      src="https://music.yandex.ru/iframe/#playlist/yandex/1031">
     </iframe>
   </div>
 
@@ -142,6 +191,21 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; overflow-x: hidden; 
 </div>
 
 <script>
+// ==========================================
+// 🎵 ЛОГИКА СМЕНЫ ПЛЕЙЛИСТА
+// ==========================================
+document.addEventListener('DOMContentLoaded', () => {
+    const playlistSelect = document.getElementById('playlist-select');
+    const musicIframe = document.getElementById('music-iframe');
+
+    if(playlistSelect && musicIframe) {
+        playlistSelect.addEventListener('change', (e) => {
+            // Меняем ссылку внутри iframe при выборе
+            musicIframe.src = e.target.value;
+        });
+    }
+});
+
 // ==========================================
 // 🌊 АНИМАЦИЯ ВОЛН (PS3 STYLE)
 // ==========================================
@@ -160,32 +224,26 @@ let time = 0;
 
 function drawWaves() {
     ctx.clearRect(0, 0, width, height);
-
-    // 3 слоя волн (увеличены скорость и амплитуда)
     drawWave(0.004, 120, 0.06, 'rgba(0, 255, 255, 0.15)');  
     drawWave(0.006, 90, 0.08, 'rgba(255, 0, 255, 0.1)');    
     drawWave(0.003, 150, 0.04, 'rgba(0, 255, 255, 0.05)');  
-
-    time += 0.05; // Скорость времени
+    time += 0.05; 
     requestAnimationFrame(drawWaves);
 }
 
 function drawWave(frequency, amplitude, speed, color) {
     ctx.beginPath();
     ctx.moveTo(0, height);
-    
     for (let x = 0; x <= width; x++) {
         const y = height / 2 + Math.sin(x * frequency + time * speed) * amplitude 
                    + Math.sin(x * frequency * 2 + time * speed * 1.5) * (amplitude / 2);
         ctx.lineTo(x, y);
     }
-    
     ctx.lineTo(width, height);
     ctx.closePath();
     ctx.fillStyle = color;
     ctx.fill();
 }
-
 drawWaves();
 
 
@@ -225,10 +283,8 @@ function showConfirm(title, text, onConfirm, btnText = 'Подтвердить')
     document.getElementById('confirm-text').textContent = text;
     const btn = document.getElementById('confirm-yes-btn');
     btn.textContent = btnText;
-    
     const actionToPerform = onConfirm;
     btn.onclick = () => { closeConfirm(); if(actionToPerform) actionToPerform(); };
-    
     document.getElementById('confirm-modal').classList.add('show');
 }
 function closeConfirm() {

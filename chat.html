@@ -169,21 +169,27 @@ function showToast(message, isError = false) {
     }, 3000);
 }
 
-let confirmCallback = null;
+// СТАЛО (РАБОЧИЙ КОД):
 function showConfirm(title, text, onConfirm, btnText = 'Подтвердить') {
     document.getElementById('confirm-title').textContent = title;
     document.getElementById('confirm-text').textContent = text;
     const btn = document.getElementById('confirm-yes-btn');
     btn.textContent = btnText;
-    confirmCallback = onConfirm;
-    btn.onclick = () => { closeConfirm(); if(confirmCallback) confirmCallback(); };
+    
+    // Сохраняем действие локально
+    const actionToPerform = onConfirm;
+    
+    btn.onclick = () => {
+        closeConfirm(); // Закрываем окно
+        if(actionToPerform) actionToPerform(); // Выполняем действие (удаление)
+    };
+    
     document.getElementById('confirm-modal').classList.add('show');
 }
+
 function closeConfirm() {
     document.getElementById('confirm-modal').classList.remove('show');
-    confirmCallback = null;
 }
-
 // 💀 СКЕЛЕТОНЫ
 function showSkeletons() {
     const container = document.getElementById('posts-container');

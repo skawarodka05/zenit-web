@@ -89,7 +89,6 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; padding-bottom: 80px
 
 .empty { text-align: center; padding: 60px 20px; color: #606060; }
 
-/* 🔔 УВЕДОМЛЕНИЯ И КАСТОМНЫЕ ОКНА */
 #toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
 .toast { background: #14142B; color: #fff; padding: 16px 20px; border-radius: 12px; border-left: 4px solid #00FFFF; box-shadow: 0 5px 15px rgba(0,0,0,0.5); font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 10px; transform: translateX(120%); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 .toast.show { transform: translateX(0); }
@@ -104,7 +103,6 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; padding-bottom: 80px
 .confirm-actions { display: flex; gap: 10px; }
 .confirm-btn { flex: 1; padding: 14px; border-radius: 12px; border: none; font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
 .confirm-btn.cancel { background: transparent; border: 1px solid #606060; color: #B0B0C0; }
-.confirm-btn.cancel:hover { background: rgba(255, 255, 255, 0.05); }
 .confirm-btn.danger { background: rgba(255, 0, 255, 0.15); border: 1px solid #FF00FF; color: #FF00FF; }
 .confirm-btn.danger:hover { background: rgba(255, 0, 255, 0.25); box-shadow: 0 0 15px rgba(255, 0, 255, 0.4); }
 </style>
@@ -226,20 +224,26 @@ function showToast(message, isError = false) {
     }, 3000);
 }
 
-// ⚠️ ПОДТВЕРЖДЕНИЯ
-let confirmCallback = null;
+// ⚠️ ПОДТВЕРЖДЕНИЯ (ИСПРАВЛЕНО!)
 function showConfirm(title, text, onConfirm, btnText = 'Подтвердить') {
     document.getElementById('confirm-title').textContent = title;
     document.getElementById('confirm-text').textContent = text;
     const btn = document.getElementById('confirm-yes-btn');
     btn.textContent = btnText;
-    confirmCallback = onConfirm;
-    btn.onclick = () => { closeConfirm(); if(confirmCallback) confirmCallback(); };
+    
+    // Сохраняем функцию локально
+    const actionToPerform = onConfirm;
+    
+    btn.onclick = () => {
+        closeConfirm(); // Закрываем окно
+        if(actionToPerform) actionToPerform(); // Выполняем удаление
+    };
+    
     document.getElementById('confirm-modal').classList.add('show');
 }
+
 function closeConfirm() {
     document.getElementById('confirm-modal').classList.remove('show');
-    confirmCallback = null;
 }
 
 // ========== ЗАГРУЗКА ==========

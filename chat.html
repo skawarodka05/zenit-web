@@ -213,6 +213,7 @@ async function loadPosts() {
     const { data, error } = await window.SB.from('posts').select('*').eq('database_name', dbName).order('id', { ascending: false });
     if (error) throw error;
     allPosts = data || [];
+      localStorage.setItem('zenit_read_' + dbName, new Date().toISOString());
     setTimeout(() => renderPosts(allPosts), 300); 
   } catch (e) {
     document.getElementById('posts-container').innerHTML = '<div class="empty">Ошибка: ' + e.message + '</div>';

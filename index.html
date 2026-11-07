@@ -165,7 +165,6 @@ function getFilteredItems() {
 }
 
 async function checkNotifications() {
-    document.querySelectorAll('.notification-badge').forEach(b => b.remove());
     if (!currentUser) return;
 
     try {
@@ -178,7 +177,6 @@ async function checkNotifications() {
             const db = post.database_name;
             const postTime = new Date(post.created_at).getTime();
             
-            // 🔑 ПРИВЯЗКА К EMAIL ПОЛЬЗОВАТЕЛЯ
             const lastViewStr = localStorage.getItem('zenit_read_' + currentUser.email + '_' + db);
             const lastViewTime = lastViewStr ? new Date(lastViewStr).getTime() : 0;
             
@@ -188,9 +186,14 @@ async function checkNotifications() {
         });
         
         displayItems.forEach(item => {
-            if (counts[item.name] > 0) {
-                const card = document.querySelector(`.db-card[data-name="${item.name}"]`);
-                if (card) {
+            // Сначала удаляем старый бейдж с этой карточки, если он есть
+            const card = document.querySelector(`.db-card[data-name="${item.name}"]`);
+            if (card) {
+                const existingBadge = card.querySelector('.notification-badge');
+                if (existingBadge) existingBadge.remove();
+
+                // Если есть новые сообщения, добавляем бейдж
+                if (counts[item.name] > 0) {
                     const badge = document.createElement('div');
                     badge.className = 'notification-badge';
                     badge.textContent = counts[item.name];
@@ -239,8 +242,7 @@ function closeConfirm() { document.getElementById('confirm-modal').classList.rem
 
 function askLogout() {
     showConfirm('Выйти из аккаунта?', 'Вам придется заново ввести логин и пароль.', () => {
-        localStorage.removeItem('zenit-user'); 
-        showToast('Вы вышли из аккаунта');
+        localStorage.removeItem('zenit-user'); showToast('Вы вышли из аккаунта');
         setTimeout(() => { location.href = 'login.html'; }, 1000);
     }, 'Выйти');
 }
@@ -274,6 +276,13 @@ window.addEventListener('pageshow', (event) => {
         if (displayItems.length > 0) checkNotifications();
     }
 });
+
+// 🔄 АВТООБНОВЛЕНИЕ УВЕДОМЛЕНИЙ КАЖДЫЕ 15 СЕКУНД
+setInterval(() => {
+    if (currentUser && displayItems.length > 0) {
+        checkNotifications();
+    }
+}, 15000);
 </script>
 </body>
 </html>

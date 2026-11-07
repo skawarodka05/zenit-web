@@ -39,15 +39,7 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; overflow-x: hidden; 
 .db-card { position: relative; background: rgba(20, 20, 43, 0.85); backdrop-filter: blur(5px); border: 1px solid rgba(0, 255, 255, 0.5); border-radius: 14px; overflow: hidden; text-decoration: none; color: #fff; display: flex; flex-direction: column; transition: all 0.2s; }
 .db-card:hover { border-color: #00FFFF; box-shadow: 0 0 15px rgba(0, 255, 255, 0.2); transform: translateY(-2px); }
 
-/* 🔴 БЕЙДЖ УВЕДОМЛЕНИЙ */
-.notification-badge {
-    position: absolute; top: 10px; right: 10px;
-    background: #FF00FF; color: #fff;
-    font-size: 12px; font-weight: 900;
-    padding: 4px 8px; border-radius: 20px;
-    box-shadow: 0 0 10px rgba(255, 0, 255, 0.8);
-    z-index: 10; animation: pulse-badge 2s infinite;
-}
+.notification-badge { position: absolute; top: 10px; right: 10px; background: #FF00FF; color: #fff; font-size: 12px; font-weight: 900; padding: 4px 8px; border-radius: 20px; box-shadow: 0 0 10px rgba(255, 0, 255, 0.8); z-index: 10; animation: pulse-badge 2s infinite; }
 @keyframes pulse-badge { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
 
 .db-image { width: 100%; height: 280px; border-bottom: 1px solid rgba(0, 255, 255, 0.3); position: relative; background: #0A0A1A; overflow: hidden; }
@@ -172,18 +164,11 @@ function getFilteredItems() {
     return ALL_ITEMS.filter(item => !HIDDEN_FOLDERS.includes(item.name));
 }
 
-// 🔴 ПРОВЕРКА УВЕДОМЛЕНИЙ (ИСПРАВЛЕНО)
 async function checkNotifications() {
-    // 1. Сначала принудительно удаляем старые бейджи (если они были)
     document.querySelectorAll('.notification-badge').forEach(b => b.remove());
 
     try {
-        const { data, error } = await window.SB
-            .from('posts')
-            .select('database_name, created_at')
-            .order('created_at', { ascending: false })
-            .limit(100);
-        
+        const { data, error } = await window.SB.from('posts').select('database_name, created_at').order('created_at', { ascending: false }).limit(100);
         if (error) throw error;
 
         let counts = {};
@@ -192,17 +177,16 @@ async function checkNotifications() {
             const db = post.database_name;
             const postTime = new Date(post.created_at).getTime();
             
-            // Получаем время прочтения из памяти (с защитой от пустых значений)
+            // Получаем время прочтения из памяти (точное время из базы)
             const lastViewStr = localStorage.getItem('zenit_read_' + db);
             const lastViewTime = lastViewStr ? new Date(lastViewStr).getTime() : 0;
             
-            // Если пост новее, чем последний визит (добавляем 3 секунды запаса на разницу часов)
-            if (postTime > (lastViewTime + 3000)) {
+            // Если пост новее, чем последний прочитанный
+            if (postTime > lastViewTime) {
                 counts[db] = (counts[db] || 0) + 1;
             }
         });
         
-        // Рисуем новые бейджи
         displayItems.forEach(item => {
             if (counts[item.name] > 0) {
                 const card = document.querySelector(`.db-card[data-name="${item.name}"]`);
@@ -229,8 +213,6 @@ function drawGrid(items) {
         html += `<a href="${item.link}" class="db-card" data-name="${item.name}">${imgHtml}<div class="db-title">${item.name}</div></a>`;
     });
     grid.innerHTML = html;
-    
-    // Как только карточки отрисованы, проверяем уведомления
     checkNotifications();
 }
 
@@ -262,10 +244,8 @@ function askLogout() {
     }, 'Выйти');
 }
 
-// Инициализация
 document.addEventListener('DOMContentLoaded', () => {
     currentUser = getUser();
-    
     if (currentUser && currentUser.name) {
         document.getElementById('user-name').textContent = currentUser.name;
         document.getElementById('header-role').textContent = ROLE_TITLES[currentUser.role] || currentUser.role || 'Сотрудник';
@@ -288,10 +268,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-// ОЧЕНЬ ВАЖНО: Перепроверка уведомлений, когда мы возвращаемся со страницы чата обратно на главную!
 window.addEventListener('pageshow', (event) => {
     if (event.persisted || performance.getEntriesByType("navigation")[0].type === "back_forward") {
-        // Если страница восстановлена из кэша браузера (нажали "Назад")
         if (displayItems.length > 0) checkNotifications();
     }
 });

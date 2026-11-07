@@ -24,7 +24,6 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; }
 .search-input { width: 100%; padding: 14px 18px; border-radius: 12px; background: #14142B; border: 1px solid rgba(0, 255, 255, 0.4); color: #fff; font-size: 14px; outline: none; }
 .search-input:focus { border-color: #00FFFF; }
 
-/* Форма создания поста */
 .composer { background: #14142B; border: 1px solid rgba(0, 255, 255, 0.4); border-radius: 14px; padding: 16px; margin-bottom: 20px; }
 .composer-title { font-size: 14px; font-weight: 700; margin-bottom: 10px; color: #00FFFF; }
 .composer input[type="text"], .composer textarea { width: 100%; padding: 12px 14px; border-radius: 10px; background: #0A0A1A; border: 1px solid rgba(0, 255, 255, 0.3); color: #fff; font-size: 14px; outline: none; margin-bottom: 10px; font-family: inherit; resize: vertical; }
@@ -33,12 +32,7 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; }
 .file-btn.active { background: rgba(255, 0, 255, 0.15); border-color: #FF00FF; color: #FF00FF; }
 .post-btn { margin-left: auto; padding: 12px 24px; background: linear-gradient(90deg, #FF00FF, #00FFFF); border: none; border-radius: 10px; color: #fff; font-weight: 700; cursor: pointer; font-size: 14px; }
 
-/* Сообщение об ограничении */
-.restriction-msg {
-    background: rgba(255, 0, 255, 0.1); border: 1px solid #FF00FF;
-    color: #FF00FF; padding: 16px; border-radius: 14px; margin-bottom: 20px;
-    text-align: center; font-weight: 700; font-size: 14px;
-}
+.restriction-msg { background: rgba(255, 0, 255, 0.1); border: 1px solid #FF00FF; color: #FF00FF; padding: 16px; border-radius: 14px; margin-bottom: 20px; text-align: center; font-weight: 700; font-size: 14px; }
 
 /* Скелетоны */
 .skeleton-post { background: #14142B; border: 1px solid rgba(0, 255, 255, 0.1); border-radius: 14px; padding: 16px; margin-bottom: 14px; }
@@ -125,7 +119,6 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; }
     <input type="text" class="search-input" id="search-input" placeholder="🔍 Поиск по постам..." oninput="filterPosts()">
   </div>
 
-  <!-- Сообщение, если роль запрещает писать -->
   <div class="restriction-msg" id="restriction-msg" style="display:none;">
     🚫 Ваша роль не позволяет создавать посты в этом разделе.
   </div>
@@ -165,10 +158,8 @@ let selectedFile = null, selectedImage = null, allPosts = [];
 document.getElementById('db-name').textContent = dbName;
 document.getElementById('db-role').textContent = currentUser.name + ' · ' + (currentUser.role || '');
 
-// 🚫 СПИСОК РОЛЕЙ, КОТОРЫМ ЗАПРЕЩЕНО СОЗДАВАТЬ ПОСТЫ
 const RESTRICTED_ROLES = ['TRAINEE', 'CHBR', 'UNIVERSAL', 'TRAINER', 'SHIFT_TRAINER'];
 
-// Показываем или скрываем форму
 if (RESTRICTED_ROLES.includes(currentUser.role)) {
     document.getElementById('restriction-msg').style.display = 'block';
     document.getElementById('composer').style.display = 'none';
@@ -213,7 +204,10 @@ async function loadPosts() {
     const { data, error } = await window.SB.from('posts').select('*').eq('database_name', dbName).order('id', { ascending: false });
     if (error) throw error;
     allPosts = data || [];
-      localStorage.setItem('zenit_read_' + dbName, new Date().toISOString());
+    
+    // ⏱️ СОХРАНЯЕМ СТАТУС ПРОЧИТАНО
+    localStorage.setItem('zenit_read_' + dbName, new Date().toISOString());
+
     setTimeout(() => renderPosts(allPosts), 300); 
   } catch (e) {
     document.getElementById('posts-container').innerHTML = '<div class="empty">Ошибка: ' + e.message + '</div>';

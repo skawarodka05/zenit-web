@@ -69,6 +69,7 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; padding-bottom: 40px
 <script>
 // 📌 Список всех ссылок
 const LINKS_DATA = [
+  { title: 'Подключение к терминалам', url: 'http://10.1.85.44:5909/vnc.html?resize=scale&quality=1&password=qweasd123&autoconnect=1&view_only=0&showDotCursor=1', emoji: '🖥️' }, // 👈 НОВАЯ ССЫЛКА
   { title: 'МД аудит', url: 'https://mdaudit.burgerkingrus.ru/#/checklists', emoji: '📋' },
   { title: 'БНБ', url: 'https://bnb.burgerkingrus.ru/', emoji: '🍔' },
   { title: 'Админка', url: 'https://admin.burgerkingrus.ru/', emoji: '⚙️' },
@@ -99,7 +100,7 @@ function renderLinks(links) {
   }
 
   grid.innerHTML = links.map(link => {
-    // Красиво обрезаем ссылку для отображения (убираем протокол и оставляем только домен)
+    // Красиво обрезаем ссылку для отображения (убираем протокол и оставляем только домен/IP)
     let shortUrl = link.url.replace(/^https?:\/\//, '');
     shortUrl = shortUrl.split('/')[0];
 

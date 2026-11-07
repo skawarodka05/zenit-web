@@ -174,11 +174,11 @@ async function loadMessages() {
     if (error) throw error;
     allMessages = data || [];
     
-    // ⏱️ СОХРАНЯЕМ ВРЕМЯ ПОСЛЕДНЕГО СООБЩЕНИЯ ИЗ БАЗЫ
+    // 🔑 ПРИВЯЗКА К EMAIL ПОЛЬЗОВАТЕЛЯ
     if (allMessages.length > 0) {
-        localStorage.setItem('zenit_read_' + DB_NAME, allMessages[allMessages.length - 1].created_at);
+        localStorage.setItem('zenit_read_' + currentUser.email + '_' + DB_NAME, allMessages[allMessages.length - 1].created_at);
     } else {
-        localStorage.setItem('zenit_read_' + DB_NAME, new Date().toISOString());
+        localStorage.setItem('zenit_read_' + currentUser.email + '_' + DB_NAME, new Date().toISOString());
     }
 
     renderMessages(allMessages);

@@ -47,7 +47,6 @@ body { background: #0A0A1A; color: #fff; display: flex; flex-direction: column; 
 .bubble.mine .bubble-delete { color: rgba(255, 255, 255, 0.5); }
 .bubble.mine .bubble-delete:hover { color: #FF00FF; }
 
-/* РЕАКЦИИ */
 .reactions-row { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
 .reaction-btn { display: flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 20px; background: #0A0A1A; border: 1px solid rgba(176, 176, 192, 0.3); color: #B0B0C0; font-size: 13px; cursor: pointer; transition: all 0.2s; user-select: none; }
 .reaction-btn:hover { background: rgba(0, 255, 255, 0.1); }
@@ -148,7 +147,6 @@ let selectedFile = null, selectedImage = null;
 if (!currentUser) { location.href = 'login.html'; }
 document.getElementById('info').textContent = currentUser.name + ' · ' + (currentUser.role || '');
 
-// 🔔 УВЕДОМЛЕНИЯ И МОДАЛКИ
 function showToast(message, isError = false) {
     const container = document.getElementById('toast-container');
     const toast = document.createElement('div');
@@ -176,8 +174,12 @@ async function loadMessages() {
     if (error) throw error;
     allMessages = data || [];
     
-    // ⏱️ СОХРАНЯЕМ СТАТУС ПРОЧИТАНО
-    localStorage.setItem('zenit_read_' + DB_NAME, new Date().toISOString());
+    // ⏱️ СОХРАНЯЕМ ВРЕМЯ ПОСЛЕДНЕГО СООБЩЕНИЯ ИЗ БАЗЫ
+    if (allMessages.length > 0) {
+        localStorage.setItem('zenit_read_' + DB_NAME, allMessages[allMessages.length - 1].created_at);
+    } else {
+        localStorage.setItem('zenit_read_' + DB_NAME, new Date().toISOString());
+    }
 
     renderMessages(allMessages);
   } catch (e) {
@@ -235,7 +237,6 @@ function filterMessages() {
   renderMessages(filtered);
 }
 
-// РЕАКЦИИ
 async function loadReactions(postId) {
   const { data, error } = await window.SB.from('reactions').select('*').eq('post_id', postId);
   if (error) return []; return data || [];

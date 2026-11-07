@@ -49,10 +49,20 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; padding-bottom: 80px
 .progress-bar { width: 100%; height: 6px; background: #0A0A1A; border-radius: 3px; overflow: hidden; margin-bottom: 12px; }
 .progress-fill { height: 100%; background: linear-gradient(90deg, #FF00FF, #00FFFF); border-radius: 3px; transition: width 0.3s; }
 
-.task-actions { display: flex; gap: 8px; margin-top: auto; border-top: 1px solid rgba(0, 255, 255, 0.1); padding-top: 12px; }
+/* Кнопки действий */
+.task-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: auto; border-top: 1px solid rgba(0, 255, 255, 0.1); padding-top: 12px; }
 .action-btn { padding: 6px 12px; border-radius: 8px; background: transparent; border: 1px solid rgba(0, 255, 255, 0.3); color: #00FFFF; font-size: 12px; cursor: pointer; transition: all 0.2s; font-weight: 600; }
 .action-btn:hover { background: rgba(0, 255, 255, 0.1); }
-.action-btn.delete { border-color: rgba(255, 0, 255, 0.3); color: #FF00FF; }
+.action-btn.delete { border-color: rgba(255, 0, 255, 0.3); color: #FF00FF; margin-left: auto;}
+.action-btn.delete:hover { background: rgba(255, 0, 255, 0.1); }
+
+/* Специфичные цвета для кнопок статуса */
+.btn-todo { border-color: rgba(176, 176, 192, 0.5); color: #B0B0C0; }
+.btn-todo:hover { background: rgba(176, 176, 192, 0.15); }
+.btn-progress { border-color: rgba(0, 255, 255, 0.5); color: #00FFFF; }
+.btn-progress:hover { background: rgba(0, 255, 255, 0.15); }
+.btn-done { border-color: rgba(0, 255, 136, 0.5); color: #00FF88; }
+.btn-done:hover { background: rgba(0, 255, 136, 0.15); }
 
 .fab { position: fixed; bottom: 24px; right: 24px; padding: 16px 24px; border: none; border-radius: 50px; background: linear-gradient(90deg, #FF00FF, #00FFFF); color: #fff; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 0 25px rgba(0, 255, 255, 0.5); display: flex; align-items: center; gap: 8px; transition: all 0.2s; }
 .fab:hover { transform: translateY(-3px); }
@@ -84,7 +94,6 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; padding-bottom: 80px
 
 .empty { text-align: center; padding: 60px 20px; color: #606060; }
 
-/* 🔔 УВЕДОМЛЕНИЯ */
 #toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
 .toast { background: #14142B; color: #fff; padding: 16px 20px; border-radius: 12px; border-left: 4px solid #00FFFF; box-shadow: 0 5px 15px rgba(0,0,0,0.5); font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 10px; transform: translateX(120%); transition: transform 0.3s; }
 .toast.show { transform: translateX(0); }
@@ -100,7 +109,6 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; padding-bottom: 80px
 .confirm-btn.cancel { background: transparent; border: 1px solid #606060; color: #B0B0C0; }
 .confirm-btn.danger { background: rgba(255, 0, 255, 0.15); border: 1px solid #FF00FF; color: #FF00FF; }
 
-/* 📅 КАСТОМНЫЙ КАЛЕНДАРЬ */
 #calendar-modal { position: fixed; inset: 0; background: rgba(10,10,26,0.8); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; z-index: 10005; }
 #calendar-modal.show { display: flex; }
 .calendar-box { background: #14142B; border: 1px solid #00FFFF; border-radius: 16px; padding: 20px; width: 320px; box-shadow: 0 0 30px rgba(0,255,255,0.2); }
@@ -130,7 +138,6 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; padding-bottom: 80px
     </div>
 </div>
 
-<!-- 📅 МОДАЛКА КАЛЕНДАРЯ -->
 <div id="calendar-modal">
     <div class="calendar-box">
         <div class="cal-header">
@@ -138,9 +145,7 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; padding-bottom: 80px
             <div class="cal-month-year" id="cal-month-year">Ноябрь 2026</div>
             <button class="cal-nav" onclick="changeMonth(1)">▶</button>
         </div>
-        <div class="cal-grid" id="cal-grid">
-            <!-- Сюда рендерятся дни -->
-        </div>
+        <div class="cal-grid" id="cal-grid"></div>
     </div>
 </div>
 
@@ -205,7 +210,6 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; padding-bottom: 80px
     <div class="form-row">
         <div class="form-group">
             <label class="form-label">Срок сдачи</label>
-            <!-- Кастомный выбор даты -->
             <input type="text" class="form-input" id="task-due-date" placeholder="Выберите дату..." readonly onclick="openCalendar()" style="cursor: pointer;">
         </div>
     </div>
@@ -234,7 +238,6 @@ let allTasks = [];
 let currentFilter = 'all';
 let modalSubtasks = []; 
 
-// --- ЛОГИКА КАСТОМНОГО КАЛЕНДАРЯ ---
 let calCurrentDate = new Date();
 let calSelectedDate = null;
 const months = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
@@ -262,20 +265,16 @@ function renderCalendar() {
     
     document.getElementById('cal-month-year').textContent = `${months[month]} ${year}`;
     
-    const firstDay = new Date(year, month, 1).getDay(); // 0 = Вс
+    const firstDay = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
-    
-    // Преобразуем Пн-Вс
     const startDay = firstDay === 0 ? 6 : firstDay - 1;
     
     let html = '';
     const weekdays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
     weekdays.forEach(d => html += `<div class="cal-weekday">${d}</div>`);
     
-    // Пустые ячейки до начала
     for (let i = 0; i < startDay; i++) html += `<div class="cal-day empty"></div>`;
     
-    // Дни
     const today = new Date();
     for (let d = 1; d <= daysInMonth; d++) {
         const isToday = d === today.getDate() && month === today.getMonth() && year === today.getFullYear();
@@ -293,7 +292,6 @@ function renderCalendar() {
 
 function selectCalDate(y, m, d) {
     calSelectedDate = new Date(y, m, d);
-    // Форматируем в YYYY-MM-DD для сохранения в БД
     const formatted = `${y}-${String(m+1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
     document.getElementById('task-due-date').value = formatted;
     document.getElementById('calendar-modal').classList.remove('show');
@@ -302,7 +300,6 @@ function selectCalDate(y, m, d) {
 document.getElementById('calendar-modal').addEventListener('click', (e) => {
     if (e.target.id === 'calendar-modal') document.getElementById('calendar-modal').classList.remove('show');
 });
-// ------------------------------------
 
 function showToast(message, isError = false) {
     const container = document.getElementById('toast-container');
@@ -370,11 +367,8 @@ function renderTasks() {
         const today = new Date().setHours(0,0,0,0);
         const due = new Date(t.due_date).setHours(0,0,0,0);
         const isOverdue = due < today && t.status !== 'done';
-        
-        // Красиво форматируем дату для отображения (ДД.ММ.ГГГГ)
         const d = new Date(t.due_date);
         const formattedDate = `${d.getDate().toString().padStart(2, '0')}.${(d.getMonth()+1).toString().padStart(2, '0')}.${d.getFullYear()}`;
-        
         dueDateHtml = `<span class="badge due-date ${isOverdue ? 'overdue' : ''}">📅 ${formattedDate} ${isOverdue ? '(Просрочено)' : ''}</span>`;
     }
 
@@ -385,6 +379,24 @@ function renderTasks() {
         const percent = Math.round((doneCount / total) * 100);
         subtasksHtml = `<div class="subtasks-preview">☑️ Выполнено подзадач: ${doneCount} из ${total}</div>`;
         progressHtml = `<div class="progress-bar"><div class="progress-fill" style="width: ${percent}%"></div></div>`;
+    }
+
+    // 🎯 ГЕНЕРАЦИЯ БЫСТРЫХ КНОПОК
+    let actionButtons = '';
+    if (t.status === 'todo') {
+        actionButtons = `
+            <button class="action-btn btn-progress" onclick="setTaskStatus(${t.id}, 'in_progress')">▶️ В работу</button>
+            <button class="action-btn btn-done" onclick="setTaskStatus(${t.id}, 'done')">✅ Завершить</button>
+        `;
+    } else if (t.status === 'in_progress') {
+        actionButtons = `
+            <button class="action-btn btn-todo" onclick="setTaskStatus(${t.id}, 'todo')">⏸️ В планы</button>
+            <button class="action-btn btn-done" onclick="setTaskStatus(${t.id}, 'done')">✅ Завершить</button>
+        `;
+    } else if (t.status === 'done') {
+        actionButtons = `
+            <button class="action-btn btn-todo" onclick="setTaskStatus(${t.id}, 'todo')">↩️ Вернуть в планы</button>
+        `;
     }
 
     return `
@@ -401,19 +413,18 @@ function renderTasks() {
         ${progressHtml}
         ${subtasksHtml}
         <div class="task-actions">
-            <button class="action-btn" onclick="quickStatus(${t.id}, '${t.status}')">
-                ${t.status === 'done' ? '↩️ Вернуть в работу' : '✅ Завершить'}
-            </button>
-            <button class="action-btn delete" onclick="askDeleteTask(${t.id})">🗑 Удалить</button>
+            ${actionButtons}
+            <button class="action-btn delete" onclick="askDeleteTask(${t.id})">🗑</button>
         </div>
       </div>
     `;
   }).join('');
 }
 
-async function quickStatus(id, currentStatus) {
-  const newStatus = currentStatus === 'done' ? 'todo' : 'done';
+// Быстрая смена статуса
+async function setTaskStatus(id, newStatus) {
   await window.SB.from('tasks').update({ status: newStatus }).eq('id', id);
+  showToast('Статус изменен');
   loadTasks();
 }
 

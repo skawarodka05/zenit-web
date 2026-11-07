@@ -166,6 +166,7 @@ function getFilteredItems() {
 
 async function checkNotifications() {
     document.querySelectorAll('.notification-badge').forEach(b => b.remove());
+    if (!currentUser) return;
 
     try {
         const { data, error } = await window.SB.from('posts').select('database_name, created_at').order('created_at', { ascending: false }).limit(100);
@@ -177,11 +178,10 @@ async function checkNotifications() {
             const db = post.database_name;
             const postTime = new Date(post.created_at).getTime();
             
-            // Получаем время прочтения из памяти (точное время из базы)
-            const lastViewStr = localStorage.getItem('zenit_read_' + db);
+            // 🔑 ПРИВЯЗКА К EMAIL ПОЛЬЗОВАТЕЛЯ
+            const lastViewStr = localStorage.getItem('zenit_read_' + currentUser.email + '_' + db);
             const lastViewTime = lastViewStr ? new Date(lastViewStr).getTime() : 0;
             
-            // Если пост новее, чем последний прочитанный
             if (postTime > lastViewTime) {
                 counts[db] = (counts[db] || 0) + 1;
             }
@@ -239,7 +239,8 @@ function closeConfirm() { document.getElementById('confirm-modal').classList.rem
 
 function askLogout() {
     showConfirm('Выйти из аккаунта?', 'Вам придется заново ввести логин и пароль.', () => {
-        localStorage.removeItem('zenit-user'); showToast('Вы вышли из аккаунта');
+        localStorage.removeItem('zenit-user'); 
+        showToast('Вы вышли из аккаунта');
         setTimeout(() => { location.href = 'login.html'; }, 1000);
     }, 'Выйти');
 }

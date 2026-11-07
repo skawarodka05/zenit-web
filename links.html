@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<link rel="icon" type="image/png" href="logo_zenit.png">
+<title>ZENIT · Сайты БК</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+body { background: #0A0A1A; color: #fff; min-height: 100vh; padding-bottom: 40px; }
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-thumb { background: #00FFFF; border-radius: 4px; }
+
+.header { display: flex; align-items: center; gap: 12px; padding: 16px; background: #14142B; border-bottom: 1px solid rgba(0, 255, 255, 0.3); position: sticky; top: 0; z-index: 100; }
+.back-btn { width: 42px; height: 42px; border-radius: 12px; background: #0A0A1A; border: 1px solid rgba(0, 255, 255, 0.5); color: #00FFFF; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.header-title { flex: 1; }
+.header-title h1 { font-size: 20px; font-weight: 700; }
+.header-title p { font-size: 13px; color: #00FFFF; margin-top: 2px; }
+
+.container { max-width: 1100px; margin: 0 auto; padding: 16px; }
+
+.search-bar { margin-bottom: 24px; }
+.search-input { width: 100%; padding: 14px 18px; border-radius: 12px; background: #14142B; border: 1px solid rgba(0, 255, 255, 0.5); color: #fff; font-size: 15px; outline: none; transition: all 0.2s; }
+.search-input:focus { border-color: #00FFFF; box-shadow: 0 0 12px rgba(0, 255, 255, 0.3); }
+
+/* Сетка ссылок */
+.links-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+.link-card { 
+    display: flex; align-items: center; gap: 16px; 
+    background: #14142B; border: 1px solid rgba(0, 255, 255, 0.4); 
+    border-radius: 14px; padding: 16px; text-decoration: none; color: #fff; 
+    transition: all 0.2s; position: relative; overflow: hidden;
+}
+.link-card:hover { border-color: #00FFFF; box-shadow: 0 0 15px rgba(0, 255, 255, 0.2); transform: translateY(-2px); background: rgba(20, 20, 43, 0.9); }
+
+.link-icon { 
+    width: 50px; height: 50px; border-radius: 12px; 
+    background: rgba(0, 255, 255, 0.1); color: #00FFFF; 
+    display: flex; align-items: center; justify-content: center; 
+    font-size: 24px; flex-shrink: 0; 
+}
+.link-info { flex: 1; min-width: 0; }
+.link-title { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+.link-url { font-size: 12px; color: #B0B0C0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+.link-arrow { color: #FF00FF; font-size: 20px; font-weight: bold; }
+
+.empty { text-align: center; padding: 60px 20px; color: #606060; grid-column: 1 / -1; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <button class="back-btn" onclick="location.href='index.html'">←</button>
+  <div class="header-title">
+    <h1>Сайты БК</h1>
+    <p>Быстрый доступ к рабочим порталам</p>
+  </div>
+</div>
+
+<div class="container">
+  <div class="search-bar">
+    <input type="text" class="search-input" id="search-input" placeholder="🔍 Поиск сайта..." oninput="filterLinks()">
+  </div>
+
+  <div class="links-grid" id="links-grid"></div>
+</div>
+
+<script>
+// 📌 Список всех ссылок
+const LINKS_DATA = [
+  { title: 'МД аудит', url: 'https://mdaudit.burgerkingrus.ru/#/checklists', emoji: '📋' },
+  { title: 'БНБ', url: 'https://bnb.burgerkingrus.ru/', emoji: '🍔' },
+  { title: 'Админка', url: 'https://admin.burgerkingrus.ru/', emoji: '⚙️' },
+  { title: 'Солво про', url: 'https://solvopro.burgerkingrus.ru/', emoji: '🧠' },
+  { title: 'МП доставка', url: 'https://logist.burgerkingrus.ru/', emoji: '🛵' },
+  { title: 'ПЛС', url: 'https://pls.burgerkingrus.ru/auth', emoji: '📊' },
+  { title: 'Старая МП', url: 'https://orderapp.burgerkingrus.ru/rest/login', emoji: '📱' },
+  { title: 'Даофис', url: 'https://burgerking.daoffice.ru/net_home/signIn', emoji: '🏢' },
+  { title: 'ВФМ', url: 'https://wfm.burgerkingrus.ru/user/dashboard', emoji: '⏱️' },
+  { title: 'Портал обучения', url: 'https://edu.burgerkingrus.ru/default', emoji: '🎓' },
+  { title: 'Авто заказ', url: 'https://restock.burgerkingrus.ru/', emoji: '📦' },
+  { title: 'Комус', url: 'https://www.komus.ru/vip/my-account', emoji: '🛒' },
+  { title: 'Матрикс', url: 'https://auth.srmx.ru/?from=https%3A%2F%2Ftrapeza.srmx.ru%2Flk%2Fcatalog%2Fprivate%2Finventar%2F%3Fhash%3Da79755364e96d10018e5539ff8d6698a#!', emoji: '🧮' },
+  { title: 'Контур', url: 'https://logist.kontur.ru/5e57bd3f-6a9f-4bc7-ba31-59a8f6fba232/consignor/information-page', emoji: '🚚' },
+  { title: 'Сервис деск', url: 'https://sd.burgerkingrus.ru/HEAT/Default.aspx', emoji: '🛠️' },
+  { title: 'Апелляции', url: 'https://forms.yandex.ru/cloud/69b938b41f1eb52f212a2325/success/?page=1&akey=afb1a742e8eacf18e42f3900ff19ddd230f141b6', emoji: '📝' },
+  { title: 'Жалобы на курьеров', url: 'https://forms.yandex.ru/u/6836a9d549363978245bd103/', emoji: '⚠️' }
+];
+
+let displayLinks = [...LINKS_DATA];
+
+function renderLinks(links) {
+  const grid = document.getElementById('links-grid');
+  
+  if (links.length === 0) {
+    grid.innerHTML = '<div class="empty">Ничего не найдено</div>';
+    return;
+  }
+
+  grid.innerHTML = links.map(link => {
+    // Красиво обрезаем ссылку для отображения (убираем протокол и оставляем только домен)
+    let shortUrl = link.url.replace(/^https?:\/\//, '');
+    shortUrl = shortUrl.split('/')[0];
+
+    return `
+      <a href="${link.url}" target="_blank" class="link-card">
+        <div class="link-icon">${link.emoji}</div>
+        <div class="link-info">
+          <div class="link-title">${link.title}</div>
+          <div class="link-url">${shortUrl}</div>
+        </div>
+        <div class="link-arrow">↗</div>
+      </a>
+    `;
+  }).join('');
+}
+
+function filterLinks() {
+  const q = document.getElementById('search-input').value.toLowerCase().trim();
+  if (!q) {
+    displayLinks = [...LINKS_DATA];
+  } else {
+    displayLinks = LINKS_DATA.filter(l => l.title.toLowerCase().includes(q) || l.url.toLowerCase().includes(q));
+  }
+  renderLinks(displayLinks);
+}
+
+// Запуск
+renderLinks(LINKS_DATA);
+</script>
+</body>
+</html>

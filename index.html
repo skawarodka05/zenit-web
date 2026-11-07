@@ -10,13 +10,11 @@
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
 body { background: #0A0A1A; color: #fff; min-height: 100vh; overflow-x: hidden; }
 
-/* 🎨 АНИМИРОВАННЫЙ ФОН (ВОЛНЫ) */
 #wave-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; opacity: 0.7; }
 ::-webkit-scrollbar { width: 8px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #00FFFF; border-radius: 4px; }
 
-/* Шапка и контент */
 .header { display: flex; align-items: center; gap: 12px; padding: 16px; background: rgba(20, 20, 43, 0.85); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(0, 255, 255, 0.3); position: sticky; top: 0; z-index: 100; }
 .logo-wrap { display: flex; align-items: center; gap: 12px; flex: 1; text-decoration: none; color: inherit; }
 .logo-img { width: 44px; height: 44px; object-fit: contain; }
@@ -37,10 +35,30 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; overflow-x: hidden; 
 .search-input { width: 100%; padding: 14px 18px; border-radius: 12px; background: rgba(20, 20, 43, 0.85); backdrop-filter: blur(5px); border: 1px solid rgba(0, 255, 255, 0.5); color: #fff; font-size: 15px; outline: none; transition: all 0.2s; }
 .search-input:focus { border-color: #00FFFF; box-shadow: 0 0 12px rgba(0, 255, 255, 0.3); }
 
-/* Сетка карточек */
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
-.db-card { background: rgba(20, 20, 43, 0.85); backdrop-filter: blur(5px); border: 1px solid rgba(0, 255, 255, 0.5); border-radius: 14px; overflow: hidden; text-decoration: none; color: #fff; display: flex; flex-direction: column; transition: all 0.2s; }
+.db-card { position: relative; background: rgba(20, 20, 43, 0.85); backdrop-filter: blur(5px); border: 1px solid rgba(0, 255, 255, 0.5); border-radius: 14px; overflow: hidden; text-decoration: none; color: #fff; display: flex; flex-direction: column; transition: all 0.2s; }
 .db-card:hover { border-color: #00FFFF; box-shadow: 0 0 15px rgba(0, 255, 255, 0.2); transform: translateY(-2px); }
+
+/* 🔴 БЕЙДЖ УВЕДОМЛЕНИЙ */
+.notification-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #FF00FF; /* Неоново-розовый */
+    color: #fff;
+    font-size: 12px;
+    font-weight: 900;
+    padding: 4px 8px;
+    border-radius: 20px;
+    box-shadow: 0 0 10px rgba(255, 0, 255, 0.8);
+    z-index: 10;
+    animation: pulse-badge 2s infinite;
+}
+@keyframes pulse-badge {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
 
 .db-image { width: 100%; height: 280px; border-bottom: 1px solid rgba(0, 255, 255, 0.3); position: relative; background: #0A0A1A; overflow: hidden; }
 .db-image img { width: 100%; height: 100%; object-fit: cover; object-position: top center; display: block; }
@@ -49,7 +67,7 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; overflow-x: hidden; 
 .db-title { padding: 16px 12px; font-size: 16px; font-weight: 700; text-align: center; flex-grow: 1; display: flex; align-items: center; justify-content: center; }
 .empty { text-align: center; padding: 60px 20px; color: #606060; grid-column: 1 / -1; }
 
-/* 🔔 УВЕДОМЛЕНИЯ И ПОДТВЕРЖДЕНИЯ */
+/* Уведомления и модалки (без изменений) */
 #toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
 .toast { background: #14142B; color: #fff; padding: 16px 20px; border-radius: 12px; border-left: 4px solid #00FFFF; box-shadow: 0 5px 15px rgba(0,0,0,0.5); font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 10px; transform: translateX(120%); transition: transform 0.3s; }
 .toast.show { transform: translateX(0); }
@@ -70,7 +88,6 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; overflow-x: hidden; 
 <body>
 
 <canvas id="wave-bg"></canvas>
-
 <div id="toast-container"></div>
 <div id="confirm-modal">
     <div class="confirm-box">
@@ -109,9 +126,7 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; overflow-x: hidden; 
 </div>
 
 <script>
-// ==========================================
 // 🌊 АНИМАЦИЯ ВОЛН
-// ==========================================
 const canvas = document.getElementById('wave-bg');
 const ctx = canvas.getContext('2d');
 let width, height;
@@ -123,67 +138,101 @@ function drawWaves() {
     drawWave(0.004, 120, 0.06, 'rgba(0, 255, 255, 0.15)');  
     drawWave(0.006, 90, 0.08, 'rgba(255, 0, 255, 0.1)');    
     drawWave(0.003, 150, 0.04, 'rgba(0, 255, 255, 0.05)');  
-    time += 0.05; 
-    requestAnimationFrame(drawWaves);
+    time += 0.05; requestAnimationFrame(drawWaves);
 }
 function drawWave(frequency, amplitude, speed, color) {
     ctx.beginPath(); ctx.moveTo(0, height);
     for (let x = 0; x <= width; x++) {
-        const y = height / 2 + Math.sin(x * frequency + time * speed) * amplitude 
-                   + Math.sin(x * frequency * 2 + time * speed * 1.5) * (amplitude / 2);
+        const y = height / 2 + Math.sin(x * frequency + time * speed) * amplitude + Math.sin(x * frequency * 2 + time * speed * 1.5) * (amplitude / 2);
         ctx.lineTo(x, y);
     }
     ctx.lineTo(width, height); ctx.closePath(); ctx.fillStyle = color; ctx.fill();
 }
 drawWaves();
 
+// КОНФИГ
+const SB_URL = 'https://owkizfikhtiqbwftqgfd.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93a2l6ZmlraHRpcWJ3ZnRxZ2ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE0OTYxMDYsImV4cCI6MjEwNzA3MjEwNn0.EHVyXiBYuSJrDVd_k5zAbwqT3ZPFF43p5Uh4_huKoOo';
+window.SB = window.supabase.createClient(SB_URL, SB_KEY);
 
-// ==========================================
-// ЛОГИКА САЙТА И РОЛЕЙ
-// ==========================================
-const ROLE_TITLES = { 
-    MANAGER: 'Менеджер', DEPUTY_DIRECTOR: 'Заместитель директора', DIRECTOR: 'Директор', 
-    TU: 'ТУ', OD: 'ОД', ID: 'ИД', MODERATOR_ZENIT: 'Модератор Zenit', LEAD_DEV_ZENIT: 'Ведущий разработчик Zenit',
-    TRAINEE: 'Стажёр', CHBR: 'ЧБР', UNIVERSAL: 'Универсал', TRAINER: 'Тренер', SHIFT_TRAINER: 'Тренер шифт'
-};
+const ROLE_TITLES = { MANAGER: 'Менеджер', DEPUTY_DIRECTOR: 'Заместитель директора', DIRECTOR: 'Директор', TU: 'ТУ', OD: 'ОД', ID: 'ИД', MODERATOR_ZENIT: 'Модератор Zenit', LEAD_DEV_ZENIT: 'Ведущий разработчик Zenit', TRAINEE: 'Стажёр', CHBR: 'ЧБР', UNIVERSAL: 'Универсал', TRAINER: 'Тренер', SHIFT_TRAINER: 'Тренер шифт' };
 
-// Добавили "Базу ЧБР"
+// 🔥 НОВЫЙ ПОРЯДОК КАРТОЧЕК
 const ALL_ITEMS = [
   { name: 'Мой Чек-лист', image: 'https://raw.githubusercontent.com/skawarodka05/zenit-web/main/banner_tasks.jpg', link: 'tasks.html', emoji: '✅' },
+  { name: 'Общение', image: 'banner_communication.jpg', link: 'messenger.html', emoji: '💬' },
+  { name: 'База Контактов', image: 'banner_contacts.jpg', link: 'contacts.html', emoji: '📞' },
   { name: 'База Документов', image: 'banner_docs.jpg', link: 'chat.html?db=База Документов', emoji: '📄' },
   { name: 'База Продуктов', image: 'banner_products.jpg', link: 'chat.html?db=База Продуктов', emoji: '🛒' },
   { name: 'База Оборудования', image: 'banner_equipment.jpg', link: 'chat.html?db=База Оборудования', emoji: '⚙️' },
   { name: 'База Человечков', image: 'banner_people.jpg', link: 'chat.html?db=База Человечков', emoji: '👥' },
-  { name: 'База Контактов', image: 'banner_contacts.jpg', link: 'contacts.html', emoji: '📞' },
   { name: 'База АУП', image: 'banner_aup.jpg', link: 'chat.html?db=База АУП', emoji: '🏢' },
   { name: 'База Алхимии', image: 'banner_alchemy.jpg', link: 'chat.html?db=База Алхимии', emoji: '🧪' },
   { name: 'Почта дня', image: 'banner_mail.jpg', link: 'chat.html?db=Почта дня', emoji: '📧' },
   { name: 'База SAI Global', image: 'banner_sai.jpg', link: 'sai.html', emoji: '📊' },
-  { name: 'Общение', image: 'banner_communication.jpg', link: 'messenger.html', emoji: '💬' },
   { name: 'Псевдо диск L', image: 'banner_disk_l.jpg', link: 'disk_l.html', emoji: '💾' },
   { name: 'База слэнга', image: 'banner_slang.jpg', link: 'slang.html', emoji: '📚' },
-  { name: 'База ЧБР', image: 'banner_chbr.jpg', link: 'chat.html?db=База ЧБР', emoji: '🏢' } // НОВАЯ ПАПКА
+  { name: 'База ЧБР', image: 'banner_chbr.jpg', link: 'chat.html?db=База ЧБР', emoji: '🏢' }
 ];
 
-// Список ролей, которым закрыт доступ к папкам
 const RESTRICTED_ROLES = ['TRAINEE', 'CHBR', 'UNIVERSAL', 'TRAINER', 'SHIFT_TRAINER'];
-// Список скрытых папок
 const HIDDEN_FOLDERS = ['База Документов', 'База Человечков', 'База Контактов', 'База АУП', 'Почта дня', 'Псевдо диск L'];
 
 let currentUser = null;
-let displayItems = [];
 
 function getUser() {
     try { const raw = localStorage.getItem('zenit-user'); if (!raw || raw === 'undefined') return null; return JSON.parse(raw); } catch(e) { return null; }
 }
 
-// Фильтрация карточек в зависимости от роли
 function getFilteredItems() {
-    if (!currentUser || !RESTRICTED_ROLES.includes(currentUser.role)) {
-        return ALL_ITEMS; // Показываем всё для директоров и остальных
-    }
-    // Скрываем запрещенные папки для новых ролей
+    if (!currentUser || !RESTRICTED_ROLES.includes(currentUser.role)) return ALL_ITEMS;
     return ALL_ITEMS.filter(item => !HIDDEN_FOLDERS.includes(item.name));
+}
+
+// 🔴 ПРОВЕРКА УВЕДОМЛЕНИЙ
+async function checkNotifications(items) {
+    try {
+        // Получаем 100 последних постов (только время и папку)
+        const { data, error } = await window.SB
+            .from('posts')
+            .select('database_name, created_at')
+            .order('created_at', { ascending: false })
+            .limit(100);
+        
+        if (error) throw error;
+
+        let counts = {};
+        
+        data.forEach(post => {
+            const db = post.database_name;
+            // Время поста (в миллисекундах)
+            const postTime = new Date(post.created_at).getTime();
+            // Время последнего просмотра этой папки
+            const lastViewStr = localStorage.getItem('zenit_read_' + db);
+            const lastViewTime = lastViewStr ? new Date(lastViewStr).getTime() : 0;
+            
+            // Если пост новее, чем последний визит
+            if (postTime > lastViewTime) {
+                counts[db] = (counts[db] || 0) + 1;
+            }
+        });
+        
+        // Рисуем бейджи
+        items.forEach(item => {
+            if (counts[item.name] > 0) {
+                const card = document.querySelector(`.db-card[data-name="${item.name}"]`);
+                if (card) {
+                    // Проверяем, нет ли уже бейджа
+                    if (!card.querySelector('.notification-badge')) {
+                        const badge = document.createElement('div');
+                        badge.className = 'notification-badge';
+                        badge.textContent = counts[item.name];
+                        card.appendChild(badge);
+                    }
+                }
+            }
+        });
+    } catch(e) { console.error("Ошибка проверки уведомлений:", e); }
 }
 
 function drawGrid(items) {
@@ -195,12 +244,12 @@ function drawGrid(items) {
         let imgHtml = item.image 
             ? `<div class="db-image"><img src="${item.image}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div class="db-image-placeholder" style="display:none;">${item.emoji}</div></div>`
             : `<div class="db-image"><div class="db-image-placeholder">${item.emoji}</div></div>`;
-        html += `<a href="${item.link}" class="db-card">${imgHtml}<div class="db-title">${item.name}</div></a>`;
+        // Добавляем data-name для поиска бейджей
+        html += `<a href="${item.link}" class="db-card" data-name="${item.name}">${imgHtml}<div class="db-title">${item.name}</div></a>`;
     });
     grid.innerHTML = html;
 }
 
-// Уведомления
 function showToast(message, isError = false) {
     const container = document.getElementById('toast-container');
     const toast = document.createElement('div');
@@ -210,6 +259,7 @@ function showToast(message, isError = false) {
     setTimeout(() => toast.classList.add('show'), 10);
     setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 300); }, 3000);
 }
+
 function showConfirm(title, text, onConfirm, btnText = 'Подтвердить') {
     document.getElementById('confirm-title').textContent = title;
     document.getElementById('confirm-text').textContent = text;
@@ -220,14 +270,14 @@ function showConfirm(title, text, onConfirm, btnText = 'Подтвердить')
     document.getElementById('confirm-modal').classList.add('show');
 }
 function closeConfirm() { document.getElementById('confirm-modal').classList.remove('show'); }
+
 function askLogout() {
-    showConfirm('Выйти из аккаунта?', 'Вам придется заново ввести логин и пароль, чтобы вернуться.', () => {
+    showConfirm('Выйти из аккаунта?', 'Вам придется заново ввести логин и пароль.', () => {
         localStorage.removeItem('zenit-user'); showToast('Вы вышли из аккаунта');
         setTimeout(() => { location.href = 'login.html'; }, 1000);
     }, 'Выйти');
 }
 
-// Инициализация страницы
 document.addEventListener('DOMContentLoaded', () => {
     currentUser = getUser();
     
@@ -243,18 +293,17 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('profile-action').textContent = 'Войти →';
     }
 
-    // Получаем карточки с учетом прав
-    displayItems = getFilteredItems();
+    const displayItems = getFilteredItems();
     drawGrid(displayItems);
+    checkNotifications(displayItems); // Запускаем проверку бейджей
 
-    // Поиск (работает только по доступным карточкам)
     document.getElementById('search-input').addEventListener('input', (e) => {
         const q = e.target.value.toLowerCase().trim();
         const filtered = q ? displayItems.filter(i => i.name.toLowerCase().includes(q)) : displayItems;
         drawGrid(filtered);
+        checkNotifications(filtered);
     });
 });
 </script>
 </body>
 </html>
- 

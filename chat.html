@@ -34,7 +34,6 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; }
 
 .restriction-msg { background: rgba(255, 0, 255, 0.1); border: 1px solid #FF00FF; color: #FF00FF; padding: 16px; border-radius: 14px; margin-bottom: 20px; text-align: center; font-weight: 700; font-size: 14px; }
 
-/* Скелетоны */
 .skeleton-post { background: #14142B; border: 1px solid rgba(0, 255, 255, 0.1); border-radius: 14px; padding: 16px; margin-bottom: 14px; }
 .skeleton-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
 .skeleton-avatar { width: 42px; height: 42px; border-radius: 50%; background: #1F1F3A; }
@@ -44,7 +43,6 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; }
 @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
 .skeleton-pulse { animation: pulse 1.5s infinite ease-in-out; }
 
-/* Посты */
 .post { background: #14142B; border: 1px solid rgba(0, 255, 255, 0.3); border-radius: 14px; padding: 16px; margin-bottom: 14px; }
 .post-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
 .post-avatar { width: 42px; height: 42px; border-radius: 50%; background: linear-gradient(135deg, #FF00FF, #00FFFF); display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 18px; flex-shrink: 0; background-size: cover; background-position: center; overflow: hidden; }
@@ -205,8 +203,12 @@ async function loadPosts() {
     if (error) throw error;
     allPosts = data || [];
     
-    // ⏱️ СОХРАНЯЕМ СТАТУС ПРОЧИТАНО
-    localStorage.setItem('zenit_read_' + dbName, new Date().toISOString());
+    // ⏱️ СОХРАНЯЕМ ВРЕМЯ ПОСЛЕДНЕГО ПОСТА ИЗ БАЗЫ (А НЕ С ЧАСОВ КОМПЬЮТЕРА)
+    if (allPosts.length > 0) {
+        localStorage.setItem('zenit_read_' + dbName, allPosts[0].created_at);
+    } else {
+        localStorage.setItem('zenit_read_' + dbName, new Date().toISOString());
+    }
 
     setTimeout(() => renderPosts(allPosts), 300); 
   } catch (e) {

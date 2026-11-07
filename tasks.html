@@ -53,10 +53,9 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; padding-bottom: 80px
 .action-btn { padding: 6px 12px; border-radius: 8px; background: transparent; border: 1px solid rgba(0, 255, 255, 0.3); color: #00FFFF; font-size: 12px; cursor: pointer; transition: all 0.2s; font-weight: 600; }
 .action-btn:hover { background: rgba(0, 255, 255, 0.1); }
 .action-btn.delete { border-color: rgba(255, 0, 255, 0.3); color: #FF00FF; }
-.action-btn.delete:hover { background: rgba(255, 0, 255, 0.1); }
 
 .fab { position: fixed; bottom: 24px; right: 24px; padding: 16px 24px; border: none; border-radius: 50px; background: linear-gradient(90deg, #FF00FF, #00FFFF); color: #fff; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 0 25px rgba(0, 255, 255, 0.5); display: flex; align-items: center; gap: 8px; transition: all 0.2s; }
-.fab:hover { transform: translateY(-3px); box-shadow: 0 0 35px rgba(0, 255, 255, 0.7); }
+.fab:hover { transform: translateY(-3px); }
 
 .modal-bg { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; backdrop-filter: blur(4px); }
 .modal-bg.show { display: flex; }
@@ -67,7 +66,7 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; padding-bottom: 80px
 .form-group { margin-bottom: 16px; }
 .form-label { display: block; font-size: 12px; color: #B0B0C0; margin-bottom: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
 .form-input, .form-select, .form-textarea { width: 100%; padding: 12px 14px; border-radius: 10px; background: #0A0A1A; border: 1px solid rgba(0, 255, 255, 0.4); color: #fff; font-size: 14px; outline: none; font-family: inherit; }
-.form-input:focus, .form-select:focus, .form-textarea:focus { border-color: #00FFFF; box-shadow: 0 0 10px rgba(0, 255, 255, 0.2); }
+.form-input:focus, .form-select:focus, .form-textarea:focus { border-color: #00FFFF; }
 .form-row { display: flex; gap: 12px; }
 .form-row > div { flex: 1; }
 
@@ -75,25 +74,21 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; padding-bottom: 80px
 .subtask-item { display: flex; align-items: center; gap: 10px; background: #0A0A1A; padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(0, 255, 255, 0.2); }
 .subtask-item input[type="checkbox"] { width: 18px; height: 18px; accent-color: #00FFFF; cursor: pointer; }
 .subtask-item input[type="text"] { flex: 1; background: none; border: none; color: #fff; font-size: 14px; outline: none; }
-.subtask-item input[type="text"]:focus { border-bottom: 1px solid #00FFFF; }
 .subtask-item button { background: none; border: none; color: #FF00FF; cursor: pointer; font-size: 16px; }
-.add-subtask-btn { background: transparent; border: 1px dashed #00FFFF; color: #00FFFF; padding: 10px; border-radius: 8px; width: 100%; cursor: pointer; font-weight: 600; font-size: 13px; transition: all 0.2s; }
-.add-subtask-btn:hover { background: rgba(0, 255, 255, 0.1); }
+.add-subtask-btn { background: transparent; border: 1px dashed #00FFFF; color: #00FFFF; padding: 10px; border-radius: 8px; width: 100%; cursor: pointer; font-weight: 600; font-size: 13px; }
 
 .modal-actions { display: flex; gap: 12px; margin-top: 24px; }
 .modal-btn { flex: 1; padding: 14px; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; border: none; transition: all 0.2s; }
 .modal-btn.save { background: linear-gradient(90deg, #FF00FF, #00FFFF); color: #fff; }
-.modal-btn.save:hover { transform: translateY(-2px); box-shadow: 0 0 15px rgba(0, 255, 255, 0.4); }
 .modal-btn.cancel { background: transparent; border: 1px solid #606060; color: #B0B0C0; }
-.modal-btn.cancel:hover { background: rgba(255, 255, 255, 0.05); }
 
 .empty { text-align: center; padding: 60px 20px; color: #606060; }
 
+/* 🔔 УВЕДОМЛЕНИЯ */
 #toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
-.toast { background: #14142B; color: #fff; padding: 16px 20px; border-radius: 12px; border-left: 4px solid #00FFFF; box-shadow: 0 5px 15px rgba(0,0,0,0.5); font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 10px; transform: translateX(120%); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+.toast { background: #14142B; color: #fff; padding: 16px 20px; border-radius: 12px; border-left: 4px solid #00FFFF; box-shadow: 0 5px 15px rgba(0,0,0,0.5); font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 10px; transform: translateX(120%); transition: transform 0.3s; }
 .toast.show { transform: translateX(0); }
 .toast.error { border-left-color: #FF00FF; }
-
 #confirm-modal { position: fixed; inset: 0; background: rgba(10, 10, 26, 0.8); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; z-index: 10000; opacity: 0; transition: opacity 0.2s; }
 #confirm-modal.show { display: flex; opacity: 1; }
 .confirm-box { background: #14142B; border: 1px solid #FF00FF; border-radius: 16px; padding: 24px; max-width: 400px; width: 90%; text-align: center; box-shadow: 0 0 30px rgba(255, 0, 255, 0.15); transform: scale(0.9); transition: transform 0.2s; }
@@ -101,10 +96,24 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; padding-bottom: 80px
 .confirm-title { font-size: 20px; font-weight: 800; color: #fff; margin-bottom: 10px; }
 .confirm-text { font-size: 14px; color: #B0B0C0; margin-bottom: 24px; line-height: 1.5; }
 .confirm-actions { display: flex; gap: 10px; }
-.confirm-btn { flex: 1; padding: 14px; border-radius: 12px; border: none; font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.2s; }
+.confirm-btn { flex: 1; padding: 14px; border-radius: 12px; border: none; font-size: 15px; font-weight: 700; cursor: pointer; }
 .confirm-btn.cancel { background: transparent; border: 1px solid #606060; color: #B0B0C0; }
 .confirm-btn.danger { background: rgba(255, 0, 255, 0.15); border: 1px solid #FF00FF; color: #FF00FF; }
-.confirm-btn.danger:hover { background: rgba(255, 0, 255, 0.25); box-shadow: 0 0 15px rgba(255, 0, 255, 0.4); }
+
+/* 📅 КАСТОМНЫЙ КАЛЕНДАРЬ */
+#calendar-modal { position: fixed; inset: 0; background: rgba(10,10,26,0.8); backdrop-filter: blur(5px); display: none; align-items: center; justify-content: center; z-index: 10005; }
+#calendar-modal.show { display: flex; }
+.calendar-box { background: #14142B; border: 1px solid #00FFFF; border-radius: 16px; padding: 20px; width: 320px; box-shadow: 0 0 30px rgba(0,255,255,0.2); }
+.cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.cal-nav { background: none; border: none; color: #FF00FF; font-size: 20px; cursor: pointer; padding: 0 10px; }
+.cal-month-year { font-size: 16px; font-weight: 700; color: #00FFFF; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; }
+.cal-weekday { font-size: 11px; color: #B0B0C0; font-weight: 700; margin-bottom: 8px; }
+.cal-day { padding: 8px 0; border-radius: 8px; cursor: pointer; font-size: 14px; color: #fff; transition: all 0.2s; }
+.cal-day:hover { background: rgba(0, 255, 255, 0.15); color: #00FFFF; }
+.cal-day.empty { cursor: default; }
+.cal-day.today { border: 1px solid #FF00FF; color: #FF00FF; font-weight: bold; }
+.cal-day.selected { background: #00FFFF; color: #0A0A1A; font-weight: bold; }
 </style>
 </head>
 <body>
@@ -117,6 +126,20 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; padding-bottom: 80px
         <div class="confirm-actions">
             <button class="confirm-btn cancel" onclick="closeConfirm()">Отмена</button>
             <button class="confirm-btn danger" id="confirm-yes-btn">Подтвердить</button>
+        </div>
+    </div>
+</div>
+
+<!-- 📅 МОДАЛКА КАЛЕНДАРЯ -->
+<div id="calendar-modal">
+    <div class="calendar-box">
+        <div class="cal-header">
+            <button class="cal-nav" onclick="changeMonth(-1)">◀</button>
+            <div class="cal-month-year" id="cal-month-year">Ноябрь 2026</div>
+            <button class="cal-nav" onclick="changeMonth(1)">▶</button>
+        </div>
+        <div class="cal-grid" id="cal-grid">
+            <!-- Сюда рендерятся дни -->
         </div>
     </div>
 </div>
@@ -182,7 +205,8 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; padding-bottom: 80px
     <div class="form-row">
         <div class="form-group">
             <label class="form-label">Срок сдачи</label>
-            <input type="date" class="form-input" id="task-due-date">
+            <!-- Кастомный выбор даты -->
+            <input type="text" class="form-input" id="task-due-date" placeholder="Выберите дату..." readonly onclick="openCalendar()" style="cursor: pointer;">
         </div>
     </div>
     <div class="form-group">
@@ -210,7 +234,76 @@ let allTasks = [];
 let currentFilter = 'all';
 let modalSubtasks = []; 
 
-// 🔔 УВЕДОМЛЕНИЯ
+// --- ЛОГИКА КАСТОМНОГО КАЛЕНДАРЯ ---
+let calCurrentDate = new Date();
+let calSelectedDate = null;
+const months = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+
+function openCalendar() {
+    if(document.getElementById('task-due-date').value) {
+        calSelectedDate = new Date(document.getElementById('task-due-date').value);
+        calCurrentDate = new Date(calSelectedDate);
+    } else {
+        calSelectedDate = null;
+        calCurrentDate = new Date();
+    }
+    renderCalendar();
+    document.getElementById('calendar-modal').classList.add('show');
+}
+
+function changeMonth(dir) {
+    calCurrentDate.setMonth(calCurrentDate.getMonth() + dir);
+    renderCalendar();
+}
+
+function renderCalendar() {
+    const year = calCurrentDate.getFullYear();
+    const month = calCurrentDate.getMonth();
+    
+    document.getElementById('cal-month-year').textContent = `${months[month]} ${year}`;
+    
+    const firstDay = new Date(year, month, 1).getDay(); // 0 = Вс
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    
+    // Преобразуем Пн-Вс
+    const startDay = firstDay === 0 ? 6 : firstDay - 1;
+    
+    let html = '';
+    const weekdays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+    weekdays.forEach(d => html += `<div class="cal-weekday">${d}</div>`);
+    
+    // Пустые ячейки до начала
+    for (let i = 0; i < startDay; i++) html += `<div class="cal-day empty"></div>`;
+    
+    // Дни
+    const today = new Date();
+    for (let d = 1; d <= daysInMonth; d++) {
+        const isToday = d === today.getDate() && month === today.getMonth() && year === today.getFullYear();
+        const isSelected = calSelectedDate && d === calSelectedDate.getDate() && month === calSelectedDate.getMonth() && year === calSelectedDate.getFullYear();
+        
+        let classes = 'cal-day';
+        if (isToday) classes += ' today';
+        if (isSelected) classes += ' selected';
+        
+        html += `<div class="${classes}" onclick="selectCalDate(${year}, ${month}, ${d})">${d}</div>`;
+    }
+    
+    document.getElementById('cal-grid').innerHTML = html;
+}
+
+function selectCalDate(y, m, d) {
+    calSelectedDate = new Date(y, m, d);
+    // Форматируем в YYYY-MM-DD для сохранения в БД
+    const formatted = `${y}-${String(m+1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+    document.getElementById('task-due-date').value = formatted;
+    document.getElementById('calendar-modal').classList.remove('show');
+}
+
+document.getElementById('calendar-modal').addEventListener('click', (e) => {
+    if (e.target.id === 'calendar-modal') document.getElementById('calendar-modal').classList.remove('show');
+});
+// ------------------------------------
+
 function showToast(message, isError = false) {
     const container = document.getElementById('toast-container');
     const toast = document.createElement('div');
@@ -218,35 +311,20 @@ function showToast(message, isError = false) {
     toast.innerHTML = `<span>${isError ? '❌' : '✅'}</span> <span>${message}</span>`;
     container.appendChild(toast);
     setTimeout(() => toast.classList.add('show'), 10);
-    setTimeout(() => {
-        toast.classList.remove('show');
-        setTimeout(() => toast.remove(), 300);
-    }, 3000);
+    setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 300); }, 3000);
 }
 
-// ⚠️ ПОДТВЕРЖДЕНИЯ (ИСПРАВЛЕНО!)
 function showConfirm(title, text, onConfirm, btnText = 'Подтвердить') {
     document.getElementById('confirm-title').textContent = title;
     document.getElementById('confirm-text').textContent = text;
     const btn = document.getElementById('confirm-yes-btn');
     btn.textContent = btnText;
-    
-    // Сохраняем функцию локально
     const actionToPerform = onConfirm;
-    
-    btn.onclick = () => {
-        closeConfirm(); // Закрываем окно
-        if(actionToPerform) actionToPerform(); // Выполняем удаление
-    };
-    
+    btn.onclick = () => { closeConfirm(); if(actionToPerform) actionToPerform(); };
     document.getElementById('confirm-modal').classList.add('show');
 }
+function closeConfirm() { document.getElementById('confirm-modal').classList.remove('show'); }
 
-function closeConfirm() {
-    document.getElementById('confirm-modal').classList.remove('show');
-}
-
-// ========== ЗАГРУЗКА ==========
 async function loadTasks() {
   try {
     const { data, error } = await window.SB.from('tasks').select('*').eq('user_email', currentUser.email).order('created_at', { ascending: false });
@@ -292,8 +370,11 @@ function renderTasks() {
         const today = new Date().setHours(0,0,0,0);
         const due = new Date(t.due_date).setHours(0,0,0,0);
         const isOverdue = due < today && t.status !== 'done';
+        
+        // Красиво форматируем дату для отображения (ДД.ММ.ГГГГ)
         const d = new Date(t.due_date);
         const formattedDate = `${d.getDate().toString().padStart(2, '0')}.${(d.getMonth()+1).toString().padStart(2, '0')}.${d.getFullYear()}`;
+        
         dueDateHtml = `<span class="badge due-date ${isOverdue ? 'overdue' : ''}">📅 ${formattedDate} ${isOverdue ? '(Просрочено)' : ''}</span>`;
     }
 
@@ -330,7 +411,6 @@ function renderTasks() {
   }).join('');
 }
 
-// ========== ДЕЙСТВИЯ ==========
 async function quickStatus(id, currentStatus) {
   const newStatus = currentStatus === 'done' ? 'todo' : 'done';
   await window.SB.from('tasks').update({ status: newStatus }).eq('id', id);
@@ -338,19 +418,13 @@ async function quickStatus(id, currentStatus) {
 }
 
 function askDeleteTask(id) {
-    showConfirm(
-        'Удалить задачу?', 
-        'Восстановить её будет невозможно.', 
-        async () => {
-            await window.SB.from('tasks').delete().eq('id', id);
-            showToast('Задача удалена');
-            loadTasks();
-        },
-        'Удалить'
-    );
+    showConfirm('Удалить задачу?', 'Восстановить её будет невозможно.', async () => {
+        await window.SB.from('tasks').delete().eq('id', id);
+        showToast('Задача удалена');
+        loadTasks();
+    }, 'Удалить');
 }
 
-// ========== МОДАЛКА ==========
 function openModal(editId = null) {
   modalSubtasks = [];
   document.getElementById('task-id').value = '';

@@ -2,11 +2,8 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<!-- 🛑 ЗАПРЕТ КЭШИРОВАНИЯ -->
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
-<!-- ------------------- -->
+<link rel="icon" type="image/png" href="logo_zenit.png?v=1">
 <title>ZENIT · Вход</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -64,7 +61,15 @@ body { background: #0A0A1A; color: #fff; min-height: 100vh; display: flex; flex-
 <script>
 const SB_URL = 'https://owkizfikhtiqbwftqgfd.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93a2l6ZmlraHRpcWJ3ZnRxZ2ZkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE0OTYxMDYsImV4cCI6MjEwNzA3MjEwNn0.EHVyXiBYuSJrDVd_k5zAbwqT3ZPFF43p5Uh4_huKoOo';
-window.SB = window.supabase.createClient(SB_URL, SB_KEY);
+
+let SB = null;
+try {
+    if (window.supabase) {
+        SB = window.supabase.createClient(SB_URL, SB_KEY);
+    }
+} catch(e) {
+    console.error("Ошибка подключения Supabase:", e);
+}
 
 async function doLogin() {
   const email = document.getElementById('login-email').value.trim();
@@ -72,8 +77,22 @@ async function doLogin() {
   const btn = document.getElementById('login-btn');
   const err = document.getElementById('error-msg');
 
+  // 🛡 ПРОВЕРКА: Если библиотека не загрузилась
+  if (!SB) {
+    err.textContent = 'Ошибка сети. Проверьте интернет и обновите страницу.';
+    err.style.display = 'block';
+    return;
+  }
+
   if (!email || !password) {
     err.textContent = 'Заполните все поля';
+    err.style.display = 'block';
+    return;
+  }
+
+  // Проверка формата email (чтобы не было ошибки "Liliyamllashka123")
+  if (!email.includes('@')) {
+    err.textContent = 'Введите корректный Email (с символом @)';
     err.style.display = 'block';
     return;
   }
@@ -83,7 +102,7 @@ async function doLogin() {
   err.style.display = 'none';
 
   try {
-    const { data, error } = await window.SB
+    const { data, error } = await SB
       .from('users')
       .select('*')
       .eq('email', email)
@@ -92,10 +111,8 @@ async function doLogin() {
 
     if (error || !data) throw new Error('Неверный логин или пароль');
 
-    // Сохраняем данные
     localStorage.setItem('zenit-user', JSON.stringify(data));
     
-    // 🛑 Задержка 100мс, чтобы браузер 100% успел сохранить данные в память
     setTimeout(() => {
         location.href = 'index.html';
     }, 100);

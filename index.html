@@ -138,7 +138,7 @@ const ALL_ITEMS = [
   { name: 'База Контактов', image: 'banner_contacts.jpg', link: 'contacts.html', emoji: '📞' },
   { name: 'Сайты БК', image: 'banner_links.jpg', link: 'links.html', emoji: '🌐' },
   { name: 'База аксапты', image: 'banner_axapta.jpg', link: 'chat.html?db=База аксапты', emoji: '🏭' },
-  { name: 'База обмана', image: 'banner_fraud.jpg', link: 'chat.html?db=База обмана', emoji: '🚨' }, // 👈 НОВАЯ ПАПКА
+  { name: 'База обмана', image: 'banner_fraud.jpg', link: 'chat.html?db=База обмана', emoji: '🚨' },
   { name: 'База Документов', image: 'banner_docs.jpg', link: 'chat.html?db=База Документов', emoji: '📄' },
   { name: 'База Продуктов', image: 'banner_products.jpg', link: 'chat.html?db=База Продуктов', emoji: '🛒' },
   { name: 'База Оборудования', image: 'banner_equipment.jpg', link: 'chat.html?db=База Оборудования', emoji: '⚙️' },
@@ -152,8 +152,21 @@ const ALL_ITEMS = [
   { name: 'База ЧБР', image: 'banner_chbr.jpg', link: 'chat.html?db=База ЧБР', emoji: '🏢' }
 ];
 
+// 👇 РОЛИ, КОТОРЫМ МЫ СКРЫВАЕМ ПАПКИ
 const RESTRICTED_ROLES = ['TRAINEE', 'CHBR', 'UNIVERSAL', 'TRAINER', 'SHIFT_TRAINER'];
-const HIDDEN_FOLDERS = ['База Документов', 'База Человечков', 'База Контактов', 'База АУП', 'Почта дня', 'Псевдо диск L'];
+
+// 👇 СПИСОК СКРЫТЫХ ПАПОК (добавили аксапту, обман и сайты БК)
+const HIDDEN_FOLDERS = [
+    'База Документов', 
+    'База Человечков', 
+    'База Контактов', 
+    'База АУП', 
+    'Почта дня', 
+    'Псевдо диск L',
+    'База аксапты',
+    'База обмана',
+    'Сайты БК'
+];
 
 let currentUser = null;
 let displayItems = [];
